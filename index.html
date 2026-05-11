@@ -12,34 +12,6 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>타석 관리</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-
-<script>
-
-const supabaseUrl = 'https://yahlfirafdwhjsitbhbq.supabase.co';
-const supabaseKey = 'sb_publishable_vBNjmFILMxxfj0cnLx9e_Q_za5eKG6x';
-
-const supabase = window.supabase.createClient(
-  supabaseUrl,
-  supabaseKey
-);
-
-async function testSave() {
-
-  const { data, error } = await supabase
-    .from('members')
-    .insert([
-      {
-        name: '테스트',
-        phone: '010-1234-5678'
-      }
-    ]);
-
-  console.log(data);
-  console.log(error);
-
-  alert('저장 시도 완료');
-}
 </script>
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"/>
 <style>
@@ -855,6 +827,34 @@ body{margin-left:0;margin-top:var(--tb-h);transition:none}
   .lesson-app{padding:54px 8px 8px}
 }
 </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+<script>
+
+const supabaseUrl = 'https://yahlfirafdwhjsitbhbq.supabase.co';
+const supabaseKey = 'sb_publishable_vBNjmFILMxxfj0cnLx9e_Q_za5eKG6x';
+
+const supabase = window.supabase.createClient(
+  supabaseUrl,
+  supabaseKey
+);
+
+async function testSave() {
+
+  const { data, error } = await supabase
+    .from('members')
+    .insert([
+      {
+        name: '테스트',
+        phone: '010-1234-5678'
+      }
+    ]);
+
+  console.log(data);
+  console.log(error);
+
+  alert('저장 시도 완료');
+}
 </head>
 <body>
 <!-- Sidebar -->
