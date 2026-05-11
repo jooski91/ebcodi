@@ -1,24 +1,43 @@
 
 
+
+
+
+
+
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>타석 대기 관리[동대구센터]</title>
+<title>타석 관리</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f2f3f6;color:#1a1a1a;font-size:14px;margin-left:200px}
-.app{max-width:1160px;margin:0 auto;padding:20px}
+body{font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f2f3f6;color:#1a1a1a;font-size:14px}
+.app{max-width:1600px;margin:0 auto;padding:20px 28px 20px}
+/* ── 페이지 헤더 (전체 너비 서브바) ── */
+.page-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 28px;height:56px;
+  background:#fff;
+  border-bottom:1px solid #e8ecf0;
+  flex-shrink:0;
+}
+.page-header-left{display:flex;align-items:center;gap:12px}
+.page-header-accent{display:none}
+.page-header-title{font-size:15px;font-weight:700;color:#111;letter-spacing:-.2px;display:flex;align-items:center;gap:7px}
+.page-header-title::before{content:'';display:inline-block;width:3px;height:14px;border-radius:2px;background:#3b82f6;flex-shrink:0}
+.page-header-right{display:flex;align-items:center;gap:8px}
 .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-.header h1{font-size:22px;font-weight:700;color:#111}
 .header .time{font-size:14px;color:#666;font-variant-numeric:tabular-nums;font-weight:600}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
 .sc{background:#fff;border-radius:10px;padding:12px 14px;text-align:center;border:1px solid #e8e8e8;box-shadow:0 1px 3px rgba(0,0,0,.04)}
 .sl{font-size:11px;color:#888;margin-bottom:4px}
 .sv{font-size:24px;font-weight:700;color:#111}
 .sv.green{color:#1a8a5e}.sv.amber{color:#c07000}.sv.red{color:#d03030}
-.main{display:grid;grid-template-columns:1fr 336px;gap:16px}
+.main{display:grid;grid-template-columns:1fr 380px;gap:16px}
 .sec-title{font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px}
 .form-title{font-size:13px;font-weight:700;color:#333;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:6px}
 .legend{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
@@ -55,15 +74,15 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f2
 .zcc{background:#f0ffe0;color:#1a5010}.zd{background:#fff0f8;color:#80204a}
 
 /* Bay grids */
-.room-row{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px;max-width:280px}
+.room-row{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px;max-width:360px}
 .bay-top{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:6px}
 .bay-bot{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:4px}
 .bay-arrow{display:flex;justify-content:space-between;font-size:10px;color:#aaa;margin-bottom:14px;padding:0 2px}
 
 /* Bay card */
-.bay{border:1px solid #e0e0e0;border-radius:8px;padding:8px 7px 6px;cursor:pointer;background:#fff;min-height:120px;position:relative;transition:box-shadow .15s,border-color .15s}
+.bay{border:1px solid #e0e0e0;border-radius:8px;padding:0 0 6px;cursor:pointer;background:#fff;min-height:160px;position:relative;transition:box-shadow .15s,border-color .15s;display:flex;flex-direction:column}
 .bay:hover{box-shadow:0 2px 8px rgba(0,0,0,.1);border-color:#bbb}
-.bay.occ{background:#eaf3fc;border-color:#90bce0}
+.bay.occ{background:#e0faf2;border-color:#00c98a}
 .bay.les{background:#eaf6e0;border-color:#8cc870}
 .bay.rles{background:#f0eeff;border-color:#a89ee8}
 .bay.urg-lo{border-color:#f0a040!important;background:#fffae8!important}
@@ -71,32 +90,52 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f2
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(208,48,48,0)}50%{box-shadow:0 0 0 4px rgba(208,48,48,.18)}}
 .bay.sug-best{outline:2px solid #1a8a5e;background:#f0faf4!important;border-color:#1a8a5e!important}
 .bay.sug-blk{outline:2px dashed #d05050;background:#fff4f4!important;border-color:#d05050!important}
+/* 타석번호 뚜껑 */
+.b-cap{border-radius:7px 7px 0 0;padding:2px 4px 2px 7px;font-size:11px;font-weight:700;color:#fff;background:#00b87f;letter-spacing:.2px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:2px}
+.b-cap-lbl{flex:1;white-space:nowrap}
+.b-cap-btns{display:flex;gap:2px;flex-shrink:0}
+.bay.occ .b-cap{background:#00b87f}
+.bay.les .b-cap{background:#72aa5a}
+.bay.rles .b-cap{background:#8878c8}
+.bay.empty-bay .b-cap{background:#bbb}
+.empty-cap{background:#ccc!important}
+/* 뚜껑 아래 콘텐츠 패딩 */
+.b-body{padding:6px 7px 0;display:flex;flex-direction:column;flex:1}
 
 /* Bay inner */
-.b-num{font-size:12px;font-weight:700;color:#666;margin-bottom:2px}
-.b-name{font-size:11px;font-weight:700;color:#222;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.b-tag{display:inline-block;font-size:9px;padding:1px 5px;border-radius:3px;font-weight:700;margin:2px 0 1px}
-.bay.occ .b-tag{background:#bdd6f0;color:#1a4a80}
+/* Bay header row */
+.b-header{display:flex;align-items:center;gap:4px;margin-bottom:4px;flex-wrap:nowrap}
+.b-num{font-size:12px;font-weight:700;color:#666;white-space:nowrap;flex-shrink:0;margin-bottom:3px}
+.b-name{font-size:13px;font-weight:700;color:#222;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.b-tag{display:inline-block;font-size:11px;padding:2px 6px;border-radius:3px;font-weight:700;margin:2px 0 1px}
+.bay.occ .b-tag{background:#b0f0da;color:#005c40}
 .bay.les .b-tag{background:#b8dda0;color:#1a5010}
 .bay.rles .b-tag{background:#cbc8f5;color:#2a1870}
-.b-times{font-size:13px;font-weight:600;color:#555;margin-top:3px;letter-spacing:.2px}
+.b-times{font-size:13px;font-weight:600;color:#555;margin-top:auto;margin-bottom:2px;letter-spacing:.2px}
 .b-rem{font-size:13px;font-weight:700;margin-top:4px;letter-spacing:-.3px}
-.bay.occ .b-rem,.bay.les .b-rem{color:#1a5080}.bay.rles .b-rem{color:#2a1870}
+.bay.occ .b-rem,.bay.les .b-rem{color:#007a55}.bay.rles .b-rem{color:#2a1870}
 .b-rem.lo{color:#c07000!important}.b-rem.hi{color:#c03030!important}.b-rem.exp{color:#c03030!important;font-size:13px}
 /* Gauge bar */
-.b-gauge-wrap{position:relative;height:19px;border-radius:4px;margin-top:4px;overflow:hidden}
-.b-gauge-fill{position:absolute;left:0;top:0;height:100%;border-radius:4px;transition:width .8s linear}
-.b-gauge-lbl{position:absolute;left:0;right:0;top:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#222;text-shadow:none;white-space:nowrap;overflow:hidden;letter-spacing:-.2px}
+.b-gauge-wrap{position:relative;height:19px;border-radius:6px;overflow:hidden}
+.b-gauge-fill{position:absolute;left:0;top:0;height:100%;border-radius:6px;transition:width .8s linear}
+.b-gauge-lbl{position:absolute;left:0;right:0;top:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#222;text-shadow:none;white-space:nowrap;overflow:hidden;letter-spacing:-.8px}
 .b-wait{display:block;font-size:9px;background:#fff3cd;border:1px solid #ffc107;border-radius:3px;color:#856404;padding:1px 4px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
 .b-sug-badge{display:inline-block;font-size:9px;padding:1px 5px;border-radius:3px;font-weight:700;margin-top:2px;background:#d4f0e4;color:#0e6640}
 .b-blk-badge{display:inline-block;font-size:9px;padding:1px 5px;border-radius:3px;font-weight:700;margin-top:2px;background:#ffe0e0;color:#a02020}
 
 /* Buttons on bay */
-.b-btns{position:absolute;top:5px;right:5px;display:flex;gap:3px;z-index:2}
+.b-btns{display:flex;gap:3px;margin-bottom:2px}
 .end-btn,.mk-btn{font-size:9px;padding:2px 5px;border-radius:4px;cursor:pointer;font-weight:700;line-height:1.4;border:1px solid}
 .dur-btn{font-size:13px;padding:3px 7px;border-radius:4px;cursor:pointer;font-weight:700;line-height:1.4;border:1px solid}
 .end-btn{border-color:#e09090;color:#c03030;background:#fff}.end-btn:hover{background:#fde8e8}
 .dur-btn{border-color:#90bce0;color:#1a4a80;background:#fff}.dur-btn:hover{background:#e8f4ff}
+/* cap 안에 들어가는 버튼 (뚜껑 배경에 맞게 오버라이드) */
+.b-cap .end-btn{background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.4);color:#fff;font-size:9px;padding:1px 5px}
+.b-cap .end-btn:hover{background:rgba(255,255,255,0.3)}
+.b-cap .mv-btn{background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.4);color:#fff;font-size:9px;padding:1px 5px}
+.b-cap .mv-btn:hover{background:rgba(255,255,255,0.3)}
+.b-cap .dur-btn{background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.4);color:#fff;font-size:14px;padding:0px 5px;line-height:1.4}
+.b-cap .dur-btn:hover{background:rgba(255,255,255,0.3)}
 
 /* Type symbol picker */
 .type-picker{display:flex;gap:6px;margin-top:4px}
@@ -131,7 +170,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f2
   min-height:48px;margin-bottom:10px;
   padding:10px 14px;border-radius:10px;
   border:1.5px solid #e8e8e8;background:#fafafa;
-  border-left-width:4px;border-left-color:#e0e0e0;
+  border-left-width:3px;border-left-color:#e0e0e0;
   transition:background .25s,border-color .25s,box-shadow .25s;
   box-shadow:0 1px 4px rgba(0,0,0,.05);
 }
@@ -144,13 +183,17 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f2
 .alert-name{font-size:13px;font-weight:800;color:#1a1a1a;line-height:1.3}
 .alert-msg{font-size:11px;color:#666;margin-top:2px;font-weight:500}
 .alert-close{
-  background:none;border:1px solid #ddd;border-radius:6px;
-  color:#888;cursor:pointer;font-size:11px;font-weight:700;
-  padding:3px 9px;font-family:inherit;flex-shrink:0;
-  transition:background .15s,color .15s;
+  background:#fff;border:1.5px solid #bbb;border-radius:6px;
+  color:#555;cursor:pointer;font-size:12px;font-weight:700;
+  padding:5px 12px;font-family:inherit;flex-shrink:0;
+  transition:background .15s,color .15s,border-color .15s;
 }
-.alert-close:hover{background:#f0f0f0;color:#333}
+.alert-close:hover{background:#f0f0f0;color:#333;border-color:#999}
 .alert-close:empty{display:none}
+.alert-panel.mode-assign .alert-close{
+  background:#fff;border-color:#1a5fa0;color:#1a5fa0;
+}
+.alert-panel.mode-assign .alert-close:hover{background:#e8f0fb;border-color:#144880;color:#144880}
 
 /* Tabs */
 .tab-bar{display:flex;gap:0;margin-bottom:16px;border-bottom:2px solid #e0e0e0}
@@ -161,7 +204,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f2
 .tab-pane.active{display:block}
 
 /* Wait-only tab full layout */
-.wait-full{display:grid;grid-template-columns:1fr 360px;gap:16px}
+.wait-full{display:grid;grid-template-columns:1fr 400px;gap:16px}
 .wait-full-list{background:#fff;border:1px solid #e8e8e8;border-radius:10px;padding:14px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
 .wf-title{font-size:13px;font-weight:700;color:#111;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
 .wf-count{font-size:11px;color:#888;font-weight:400}
@@ -217,16 +260,16 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f2
 .drink-temp-btn:hover{border-color:#90bce0;color:#1a5fa0}
 .drink-temp-btn.sel{background:#1a5fa0;color:#fff;border-color:#1a5fa0}
 /* Form inline drink selector */
-.form-drink-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-top:2px}
-.form-drink-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 3px;border:2px solid #e0e0e0;border-radius:8px;cursor:pointer;background:#fff;transition:all .13s;font-family:inherit}
+.form-drink-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:2px}
+.form-drink-item{display:flex;flex-direction:column;align-items:center;gap:1px;padding:5px 2px;border:2px solid #e0e0e0;border-radius:7px;cursor:pointer;background:#fff;transition:all .13s;font-family:inherit}
 .form-drink-item:hover{border-color:#bbb;background:#f8f8f8}
 .form-drink-item.selected{border-color:#1a5fa0;background:#eaf3fc}
 .form-drink-item.none-sel{border-color:#f09090;background:#fde8e8}
-.form-drink-item .fdi-icon{font-size:16px;line-height:1}
+.form-drink-item .fdi-icon{font-size:14px;line-height:1}
 .form-drink-item .fdi-name{font-size:9px;font-weight:700;color:#333;text-align:center;line-height:1.2;white-space:pre-line}
 .form-drink-item.selected .fdi-name{color:#1a4a80}
-.form-drink-temp-row{display:flex;gap:3px;margin-top:4px;flex-wrap:wrap}
-.form-drink-temp-btn{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;border:1px solid #ddd;background:#fff;cursor:pointer;color:#555;font-family:inherit;transition:all .12s}
+.form-drink-temp-row{display:flex;gap:3px;margin-top:3px;flex-wrap:wrap}
+.form-drink-temp-btn{font-size:9px;font-weight:700;padding:2px 5px;border-radius:4px;border:1px solid #ddd;background:#fff;cursor:pointer;color:#555;font-family:inherit;transition:all .12s}
 .form-drink-temp-btn:hover{border-color:#90bce0;color:#1a5fa0}
 .form-drink-temp-btn.sel{background:#1a5fa0;color:#fff;border-color:#1a5fa0}
 /* Bay drink badge */
@@ -242,7 +285,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f2
 .btn-add:active{background:#0f3560;transform:scale(0.97);box-shadow:inset 0 2px 4px rgba(0,0,0,.2)}
 
 /* ── 회원 상세 페이지 ── */
-#member-detail-page .app{max-width:1100px;padding:16px 20px}
+#member-detail-page .app{max-width:1400px;padding:16px 28px}
 .mbd-back{display:inline-flex;align-items:center;gap:5px;background:none;border:none;cursor:pointer;font-size:12px;font-weight:700;color:#888;padding:0;font-family:inherit;margin-bottom:14px;transition:color .12s}
 .mbd-back:hover{color:#1a5fa0}
 .mbd-layout{display:grid;grid-template-columns:220px 1fr;gap:16px;align-items:start}
@@ -310,9 +353,15 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f2
 .mbtn.d{border-color:#e09090;color:#c03030}.mbtn.d:hover{background:#fde8e8}
 /* Assign mode */
 .bay.assign-target{border:2.5px solid #1a5fa0!important;background:#ddeeff!important;cursor:pointer;animation:pulse-assign .8s ease-in-out infinite alternate}
-.bay.assign-target:hover{background:#c0dcf8!important;transform:scale(1.04)}
+.bay.assign-target:hover{background:#c0dcf8!important}
 .bay.assign-dim{opacity:.35;pointer-events:none}
 @keyframes pulse-assign{from{box-shadow:0 0 0 0 rgba(26,95,160,.3)}to{box-shadow:0 0 0 6px rgba(26,95,160,.0)}}
+/* Move mode */
+.bay.move-source{border:2.5px solid #f59e0b!important;background:#fffbeb!important;cursor:default!important}
+.bay.move-target{border:2.5px solid #10b981!important;background:#ecfdf5!important;cursor:pointer;animation:pulse-move .8s ease-in-out infinite alternate}
+.bay.move-target:hover{background:#d1fae5!important}
+.bay.move-dim{opacity:.35;pointer-events:none}
+@keyframes pulse-move{from{box-shadow:0 0 0 0 rgba(16,185,129,.3)}to{box-shadow:0 0 0 6px rgba(16,185,129,0)}}
 /* Toast feedback */
 .toast{
   position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);
@@ -364,7 +413,50 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f2
 .dadj:hover{background:#f0f0f0}
 .dval{font-size:13px;font-weight:700;color:#111;min-width:38px;text-align:center}
 
-@media(max-width:800px){.main{grid-template-columns:1fr}.bay-top,.bay-bot{grid-template-columns:repeat(4,1fr)}}
+/* ── 이용권 관리 ── */
+/* ── 이용권 레이아웃 ── */
+.tk-layout{display:grid;grid-template-columns:280px 1fr;height:calc(100vh - 56px);overflow:hidden}
+.tk-sidebar{border-right:1px solid #e8ecf0;background:#f8fafc;overflow-y:auto;display:flex;flex-direction:column}
+.tk-search-wrap{padding:12px 12px 8px;position:sticky;top:0;background:#f8fafc;z-index:1;border-bottom:1px solid #eee}
+.tk-search-wrap input{width:100%;padding:7px 10px;border:1px solid #ddd;border-radius:7px;font-size:13px;font-family:inherit;outline:none;background:#fff}
+.tk-search-wrap input:focus{border-color:#90bce0}
+.tk-sidebar-group{}
+.tk-sidebar-group-title{padding:10px 14px 5px;font-size:10px;font-weight:800;color:#fff;letter-spacing:.5px;display:flex;align-items:center;justify-content:space-between}
+.tk-sidebar-group-title.g-practice{background:#2563a8}
+.tk-sidebar-group-title.g-lesson{background:#5b21b6}
+.tk-sidebar-item{padding:10px 16px;font-size:13px;color:#333;cursor:pointer;border-bottom:1px solid #eee;background:#fff;transition:background .12s;display:block;width:100%;text-align:left;border-left:none;border-right:none;border-top:none;font-family:inherit}
+.tk-sidebar-item:hover{background:#eaf3fc;color:#1a5fa0}
+.tk-sidebar-item.active{background:#eaf3fc;color:#1a5fa0;font-weight:700;border-left:3px solid #1a5fa0;padding-left:13px}
+.tk-detail{overflow-y:auto;padding:24px 28px;background:#fff}
+.tk-detail-header{display:flex;align-items:flex-start;justify-content:space-between;padding-bottom:16px;border-bottom:1px solid #eee;margin-bottom:16px}
+.tk-detail-title{font-size:17px;font-weight:800;color:#111;margin-bottom:4px}
+.tk-detail-sub{font-size:12px;color:#888}
+.tk-detail-row{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border:1px solid #eee;border-radius:10px;margin-bottom:10px;background:#fff;transition:box-shadow .12s}
+.tk-detail-row:hover{box-shadow:0 2px 8px rgba(0,0,0,.07)}
+.tk-detail-row-left{}
+.tk-detail-row-name{font-size:14px;font-weight:700;color:#1a5fa0}
+.tk-detail-row-meta{font-size:12px;color:#888;margin-top:3px}
+.tk-detail-row-right{display:flex;align-items:center;gap:12px;flex-shrink:0}
+.tk-detail-price{font-size:16px;font-weight:800;color:#111}
+.tk-detail-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:#e8f0fc;color:#1a5fa0}
+.tk-btn-edit{font-size:11px;padding:4px 12px;border:1px solid #90bce0;border-radius:6px;background:#fff;color:#1a5fa0;cursor:pointer;font-family:inherit;font-weight:700}
+.tk-btn-edit:hover{background:#eaf3fc}
+.tk-btn-del{font-size:11px;padding:4px 10px;border:1px solid #e09090;border-radius:6px;background:#fff;color:#c03030;cursor:pointer;font-family:inherit;font-weight:700}
+.tk-btn-del:hover{background:#fde8e8}
+.tk-type-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
+.tk-type-opt{padding:10px 8px;border:2px solid #e0e0e0;border-radius:8px;cursor:pointer;text-align:center;background:#fff;font-family:inherit;transition:all .15s}
+.tk-type-opt:hover{border-color:#bbb;background:#f8f8f8}
+.tk-type-opt.selected{border-color:#1a5fa0;background:#eaf3fc}
+.tk-type-opt .tko-lbl{font-size:11px;font-weight:700;color:#555;display:block}
+.tk-type-opt.selected .tko-lbl{color:#1a4a80}
+.tk-cat-range{background:#dbeafe;color:#1d4ed8}
+.tk-cat-count{background:#dcfce7;color:#166534}
+.tk-cat-les30{background:#fce7f3;color:#9d174d}
+.tk-cat-les50{background:#ede9ff;color:#5b21b6}
+
+@media(max-width:600px){
+  #tk-list{grid-template-columns:1fr}
+}
 
 /* ── MOBILE ── */
 @media(max-width:600px){
@@ -373,7 +465,6 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f2
 
   /* Header */
   .header{margin-bottom:10px}
-  .header h1{font-size:15px}
   .header .time{font-size:12px}
 
   /* Stats */
@@ -412,9 +503,9 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f2
   .bay-top{grid-template-columns:repeat(6,1fr);gap:3px;margin-bottom:3px}
   .bay-bot{grid-template-columns:repeat(6,1fr);gap:3px;margin-bottom:3px}
   .bay{min-height:72px;padding:5px 4px 4px;border-radius:6px}
-  .b-num{font-size:9px;margin-bottom:1px}
-  .b-name{font-size:10px}
-  .b-tag{font-size:8px;padding:1px 3px;margin:1px 0}
+  .b-num{position:static;font-size:9px;padding-right:0;margin-bottom:2px}
+  .b-name{font-size:12px;padding-right:44px;margin-top:0}
+  .b-tag{font-size:10px;padding:1px 4px;margin:1px 0}
   .b-times{font-size:9px}
   .b-rem{font-size:9px}
   .b-gauge-wrap{height:13px;margin-top:2px}
@@ -423,9 +514,9 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f2
   .b-wait{font-size:8px;padding:1px 3px}
   .b-sug-badge,.b-blk-badge,.b-fc-badge,.b-fc-badge-fac,.b-fc-badge-les,
   .b-fc-soon,.b-fc-soon-fac,.b-fc-soon-les{font-size:8px;padding:1px 3px}
-  .b-btns{top:3px;right:3px;gap:2px}
-  .end-btn,.mk-btn{font-size:8px;padding:2px 4px}
-  .dur-btn{font-size:11px;padding:2px 5px}
+  .b-cap-btns{gap:1px}
+  .b-cap .end-btn,.b-cap .mv-btn{font-size:8px;padding:1px 4px}
+  .b-cap .dur-btn{font-size:10px;padding:1px 3px}
 
   /* Bay arrow */
   .bay-arrow{font-size:9px;margin-bottom:8px}
@@ -488,7 +579,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f2
   .bay-top,.bay-bot{grid-template-columns:repeat(6,1fr);gap:2px}
   .bay{min-height:64px;padding:4px 3px}
   .b-num{font-size:8px}
-  .b-name{font-size:9px}
+  .b-name{font-size:11px;margin-top:0}
 }
 
 /* Modal: 모바일에서 하단 슬라이드업 */
@@ -500,88 +591,122 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f2
   #member-page .app>div:last-child{grid-template-columns:1fr!important}
 }
 
-/* ===== SIDEBAR ===== */
-:root{--sb-w:190px;--sb-cw:52px}
-.sidebar{
-  position:fixed;left:0;top:0;bottom:0;width:var(--sb-w);
+/* ===== TOPBAR ===== */
+:root{--tb-h:52px}
+.topbar{
+  position:fixed;top:0;left:0;right:0;height:var(--tb-h);
   background:#fff;z-index:200;
-  display:flex;flex-direction:column;
-  border-right:1px solid #e0e4ea;
-  box-shadow:2px 0 8px rgba(0,0,0,.05);
-  transition:width .22s cubic-bezier(.4,0,.2,1);
+  display:flex;align-items:center;gap:0;
+  border-bottom:1px solid #e0e4ea;
+  box-shadow:0 1px 6px rgba(0,0,0,.06);
+}
+.topbar-logo{
+  padding:0 16px;font-size:14px;font-weight:800;color:#1a5fa0;
+  letter-spacing:.3px;white-space:nowrap;flex-shrink:0;
+  border-right:1px solid #eaecf0;height:100%;display:flex;align-items:center;justify-content:center;
+  min-width:140px;
+}
+.topbar-nav{display:flex;align-items:center;height:100%;flex-shrink:0}
+.topbar-item{
+  display:flex;align-items:center;gap:6px;height:100%;
+  padding:0 16px;font-size:13px;font-weight:600;color:#666;
+  cursor:pointer;border:none;background:none;
+  font-family:inherit;transition:all .15s;white-space:nowrap;
+  border-right:1px solid #f0f0f0;
+}
+.topbar-item:hover{color:#1a5fa0;background:#f5f9ff}
+.topbar-item.active{color:#1a5fa0;background:#f0f6ff}
+.topbar-divider{width:1px;height:24px;background:#eee;margin:0 4px;flex-shrink:0}
+/* 상단 버튼 그룹 (홈/뒤로/새로고침) */
+.topbar-actions{display:flex;align-items:center;gap:2px;padding:0 8px;border-right:1px solid #eaecf0;flex-shrink:0}
+.tb-btn{
+  background:none;border:none;cursor:pointer;color:#666;
+  width:36px;height:36px;border-radius:7px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;transition:all .12s;
+}
+.tb-btn:hover{color:#1a5fa0;background:#eaf3fc}
+/* 회원 검색 */
+.topbar-search{
+  display:flex;align-items:center;padding:0 12px;
+  border-right:1px solid #eaecf0;flex-shrink:0;
+}
+.topbar-search-wrap{
+  display:flex;align-items:center;
+  border:1px solid #e0e0e0;border-radius:18px;
+  background:#f8f9fa;transition:border-color .15s,background .15s;
   overflow:hidden;
 }
-.sidebar.collapsed{width:var(--sb-cw)}
-.sidebar-logo{
-  padding:16px 14px 12px;font-size:13px;font-weight:700;
-  border-bottom:1px solid #eaecf0;color:#1a5fa0;letter-spacing:.3px;
-  display:flex;align-items:center;justify-content:space-between;
-  min-height:52px;flex-shrink:0;
+.topbar-search-wrap:focus-within{border-color:#90bce0;background:#fff}
+.topbar-search-wrap input{
+  border:none;background:none;padding:5px 8px 5px 12px;
+  font-size:12px;font-family:inherit;outline:none;width:150px;
+  color:#333;
 }
-.sidebar-logo-text{white-space:nowrap;overflow:hidden;opacity:1;transition:opacity .15s}
-.sidebar.collapsed .sidebar-logo-text{opacity:0;width:0}
-.sidebar-collapse-btn{
-  background:none;border:none;cursor:pointer;color:#aaa;
-  width:28px;height:28px;border-radius:6px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:16px;line-height:1;transition:all .12s;flex-shrink:0;
+.topbar-search-wrap input:focus{width:150px}
+.topbar-search-wrap input::placeholder{color:#bbb}
+.topbar-search-btn{
+  background:none;border:none;cursor:pointer;
+  padding:4px 10px 4px 4px;color:#aaa;font-size:13px;
+  display:flex;align-items:center;transition:color .12s;
+  flex-shrink:0;
 }
-.sidebar-collapse-btn:hover{color:#1a5fa0;background:#eaf3fc}
-.sidebar-collapse-btn .icon-open{display:block}
-.sidebar-collapse-btn .icon-closed{display:none}
-.sidebar.collapsed .sidebar-collapse-btn .icon-open{display:none}
-.sidebar.collapsed .sidebar-collapse-btn .icon-closed{display:block}
-.sidebar-nav{display:flex;flex-direction:column;padding:8px 0;flex:1;white-space:nowrap;overflow:hidden}
-.sidebar-item{
-  display:flex;align-items:center;gap:0;
-  padding:11px 0 11px 14px;font-size:13px;font-weight:600;color:#555;
-  cursor:pointer;transition:all .15s;border:none;background:none;
-  border-left:3px solid transparent;width:100%;text-align:left;font-family:inherit;
-}
-.sidebar-item:hover{background:#f0f5fb;color:#1a5fa0}
-.sidebar-item.active{background:#eaf3fc;color:#1a5fa0;border-left-color:#1a5fa0}
-.sidebar-icon{font-size:17px;flex-shrink:0;width:24px;text-align:center}
-.sidebar-label{
-  margin-left:10px;white-space:nowrap;overflow:hidden;
-  opacity:1;transition:opacity .15s .05s;
-}
-.sidebar.collapsed .sidebar-label{opacity:0;width:0;margin-left:0}
+.topbar-search-btn:hover{color:#1a5fa0}
 
-/* Layout shift */
-body{margin-left:var(--sb-w);transition:margin-left .22s cubic-bezier(.4,0,.2,1)}
-body.sidebar-collapsed{margin-left:var(--sb-cw)}
-#lesson-page{left:var(--sb-w);transition:left .22s cubic-bezier(.4,0,.2,1)}
-body.sidebar-collapsed #lesson-page{left:var(--sb-cw)}
-
-/* Mobile */
-.sidebar-toggle{
-  display:none;position:fixed;top:12px;left:12px;z-index:300;
-  background:#1a5fa0;color:#fff;border:none;border-radius:7px;
-  padding:7px 11px;font-size:18px;cursor:pointer;line-height:1;
-  box-shadow:0 2px 8px rgba(0,0,0,.2)
-}
-.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:150}
-.sidebar-expand-btn{display:none}
+/* Layout shift — topbar 대신 상단 여백 */
+body{margin-left:0;margin-top:var(--tb-h);transition:none}
+#lesson-page{left:0;top:var(--tb-h);transition:none}
 
 @media(max-width:768px){
-  body,body.sidebar-collapsed{margin-left:0!important}
-  .sidebar{transform:translateX(-100%);width:var(--sb-w)!important}
-  .sidebar.open{transform:translateX(0)}
-  .sidebar-toggle{display:block}
-  .sidebar-overlay.show{display:block}
-  .app{padding-top:50px}
+  body{margin-top:var(--tb-h)}
+  .topbar-logo{min-width:auto;padding:0 12px}
+  .topbar-search-wrap input{width:90px}
+  .topbar-search-wrap input:focus{width:90px}
   #lesson-page{left:0!important}
+}
+
+/* ===== HOME PAGE ===== */
+#home-page .app{max-width:1400px;padding:28px 24px}
+.home-apps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px}
+.home-app-card{
+  background:#fff;border:1px solid #e8e8e8;border-radius:16px;
+  padding:24px 20px;cursor:pointer;transition:all .18s;
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  box-shadow:0 1px 4px rgba(0,0,0,.04);text-align:center;
+}
+.home-app-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.10);border-color:#c0d8f0}
+.home-app-icon{font-size:36px;line-height:1}
+.home-app-label{font-size:14px;font-weight:800;color:#111}
+.home-app-desc{font-size:11px;color:#aaa;font-weight:500}
+.home-panel{background:#fff;border:1px solid #e8e8e8;border-radius:14px;padding:18px 20px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.home-panel-title{font-size:11px;font-weight:800;color:#aaa;letter-spacing:.5px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+.home-panel-badge{background:#eaf3fc;color:#1a5fa0;border-radius:20px;padding:2px 8px;font-size:11px;font-weight:800}
+.home-issue-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f5f5f5}
+.home-issue-row:last-child{border-bottom:none}
+.home-issue-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.home-issue-dot.red{background:#ef4444}
+.home-issue-dot.yellow{background:#f59e0b}
+.home-issue-dot.green{background:#22c55e}
+.home-issue-dot.blue{background:#3b82f6}
+.home-issue-text{font-size:12px;color:#333;font-weight:600;flex:1;line-height:1.4}
+.home-issue-time{font-size:10px;color:#bbb;white-space:nowrap}
+.home-empty{text-align:center;padding:24px;color:#ccc;font-size:12px}
+@media(max-width:700px){
+  .home-apps{grid-template-columns:repeat(3,1fr);gap:10px}
+  .home-app-card{padding:16px 10px}
+  .home-app-icon{font-size:28px}
+  .home-app-label{font-size:12px}
+  .home-app-desc{display:none}
+  .home-dashboard{grid-template-columns:1fr}
 }
 
 /* ===== LESSON SCHEDULE ===== */
 #lesson-page{
-  position:fixed;top:0;right:0;bottom:0;left:200px;
+  position:fixed;top:var(--tb-h);right:0;bottom:0;left:0;
   display:none;flex-direction:column;overflow:hidden;background:#f2f3f6;
-  transition:left .22s ease;
 }
 #lesson-page.active{display:flex}
-body.sidebar-hidden #lesson-page{left:0}
-.lesson-app{display:flex;flex-direction:column;flex:1;overflow:hidden;padding:12px 14px 10px;min-height:0}
+.lesson-app{display:flex;flex-direction:column;flex:1;overflow:hidden;min-height:0;background:#f2f3f6;padding:12px 16px 0}
 
 /* Toolbar */
 .ls-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:nowrap;gap:6px;flex-shrink:0}
@@ -624,10 +749,24 @@ body.sidebar-hidden #lesson-page{left:0}
   transition:opacity .12s,box-shadow .12s;
   border-left:3px solid transparent;
 }
-.ls-block:hover{opacity:.82;box-shadow:0 2px 8px rgba(0,0,0,.14)}
+.ls-block:hover{opacity:.82;box-shadow:0 2px 8px rgba(0,0,0,.14);overflow:visible;z-index:50;}
 .ls-block-type{font-size:8px;font-weight:700;padding:0 3px;border-radius:2px;margin-bottom:1px;display:inline-block}
 .ls-block-name{font-weight:700;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ls-block-time{font-size:9px;opacity:.6;margin-top:1px}
+/* 30분 블록 툴팁 */
+.ls-block-tooltip{
+  display:none;position:absolute;z-index:100;
+  left:calc(100% + 6px);top:50%;transform:translateY(-50%);
+  background:#1a1a1a;color:#fff;border-radius:7px;
+  padding:7px 10px;font-size:11px;line-height:1.6;
+  white-space:nowrap;pointer-events:none;
+  box-shadow:0 4px 14px rgba(0,0,0,.22);
+}
+.ls-block-tooltip::before{
+  content:'';position:absolute;right:100%;top:50%;transform:translateY(-50%);
+  border:5px solid transparent;border-right-color:#1a1a1a;
+}
+.ls-block:hover .ls-block-tooltip{display:block;}
 
 /* ── Single-Pro weekly view ── */
 .ls-pro-view{flex:1;display:flex;flex-direction:column;min-height:0;gap:8px}
@@ -690,45 +829,85 @@ body.sidebar-hidden #lesson-page{left:0}
 </head>
 <body>
 <!-- Sidebar -->
-<div class="sidebar" id="sidebar">
-  <div class="sidebar-logo">
-    <span class="sidebar-logo-text">동대구센터</span>
-    <button class="sidebar-collapse-btn" onclick="toggleSidebarCollapse()" title="사이드바 접기/열기">
-      <svg class="icon-open" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1.5" y="1.5" width="15" height="15" rx="3" stroke="currentColor" stroke-width="1.5"/><line x1="6" y1="1.5" x2="6" y2="16.5" stroke="currentColor" stroke-width="1.5"/><path d="M9.5 7L7.5 9L9.5 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <svg class="icon-closed" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1.5" y="1.5" width="15" height="15" rx="3" stroke="currentColor" stroke-width="1.5"/><line x1="6" y1="1.5" x2="6" y2="16.5" stroke="currentColor" stroke-width="1.5"/><path d="M8.5 7L10.5 9L8.5 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </button>
+<div class="topbar" id="topbar">
+  <div class="topbar-logo" onclick="showPage('home-page')" style="cursor:pointer" title="홈으로">EB동대구센터</div>
+  <div class="topbar-actions">
+    <button class="tb-btn" onclick="tbGoBack()" title="뒤로가기"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <button class="tb-btn" onclick="location.reload()" title="새로고침"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></button>
   </div>
-  <nav class="sidebar-nav">
-    <button class="sidebar-item active" onclick="showPage('bay-page')" title="타석 대기 관리">
-      <span class="sidebar-icon">🏌️</span><span class="sidebar-label">타석 대기 관리</span>
+  <div class="topbar-search">
+    <div class="topbar-search-wrap">
+      <input type="text" id="topbar-mb-search" placeholder="회원 검색…"
+        oninput="topbarMbSearch(this.value)"
+        onkeydown="if(event.key==='Enter')topbarMbSearchGo()"/>
+      <button class="topbar-search-btn" onclick="topbarMbSearchGo()" title="검색">🔍</button>
+    </div>
+  </div>
+  <nav class="topbar-nav">
+    <button class="topbar-item" id="tb-home" onclick="showPage('home-page')" style="display:none"></button>
+    <button class="topbar-item active" id="tb-bay" onclick="showPage('bay-page')">
+      타석 관리
     </button>
-    <button class="sidebar-item" onclick="showPage('lesson-page')" title="레슨 스케줄">
-      <span class="sidebar-icon">📅</span><span class="sidebar-label">레슨 스케줄</span>
+    <button class="topbar-item" id="tb-lesson" onclick="showPage('lesson-page')">
+      레슨 스케줄
     </button>
-    <button class="sidebar-item" onclick="showPage('member-page')" title="회원 리스트">
-      <span class="sidebar-icon">👥</span><span class="sidebar-label">회원 리스트</span>
+    <button class="topbar-item" id="tb-member" onclick="showPage('member-page')">
+      회원 리스트
+    </button>
+    <button class="topbar-item" id="tb-ticket" onclick="showPage('ticket-page')">
+      이용권 관리
     </button>
   </nav>
 </div>
 
-<!-- Sidebar toggle (mobile) -->
-<button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()">☰</button>
-<!-- Overlay for mobile -->
-<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
-
-<!-- Main content wrapper -->
-<div class="main-wrapper" id="main-wrapper">
-
-<!-- ===== PAGE: 타석 대기 관리 ===== -->
-<div id="bay-page" class="page active">
+<!-- ===== PAGE: 홈 ===== -->
+<div id="home-page" class="page active">
 <div class="app">
-  <div class="header">
-    <h1>타석 대기 관리[동대구센터]</h1>
-    <div style="display:flex;align-items:center;gap:10px">
+
+  <!-- 오늘의 이슈 (맨 위, 전체 너비) -->
+  <div class="home-panel" style="margin-bottom:16px">
+    <div class="home-panel-title">
+      오늘의 이슈
+      <span class="home-panel-badge" id="home-issue-count">0건</span>
+    </div>
+    <div id="home-issues"></div>
+  </div>
+
+  <!-- 앱 카드 -->
+  <div class="home-apps">
+    <div class="home-app-card" onclick="showPage('bay-page')">
+      <div class="home-app-icon">🏌️</div>
+      <div class="home-app-label">타석 관리</div>
+      <div class="home-app-desc">타석 배정 · 대기 현황</div>
+    </div>
+    <div class="home-app-card" onclick="showPage('lesson-page')">
+      <div class="home-app-icon">📅</div>
+      <div class="home-app-label">레슨 스케줄</div>
+      <div class="home-app-desc">강사별 일정 관리</div>
+    </div>
+    <div class="home-app-card" onclick="showPage('member-page')">
+      <div class="home-app-icon">👥</div>
+      <div class="home-app-label">회원 리스트</div>
+      <div class="home-app-desc">회원 등록 · 조회</div>
+    </div>
+  </div>
+
+</div>
+</div><!-- end #home-page -->
+
+<!-- ===== PAGE: 타석 관리 ===== -->
+<div id="bay-page" class="page" style="display:none">
+  <div class="page-header">
+    <div class="page-header-left">
+
+      <div class="page-header-title">타석 관리</div>
+    </div>
+    <div class="page-header-right">
       <button class="bulk-end-btn" onclick="openBulkEnd()">⏹ 일괄 종료</button>
       <span class="time" id="clock"></span>
     </div>
   </div>
+<div class="app">
   <div id="alert-panel" class="alert-panel">
     <span id="alert-icon" class="alert-icon"></span>
     <div class="alert-body">
@@ -750,8 +929,9 @@ body.sidebar-hidden #lesson-page{left:0}
   <div class="tab-pane active" id="tab-bay">
     <div class="main">
       <div>
-        <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
-          <button onclick="openBulkStart()" style="background:#1a5fa0;color:#fff;border:none;border-radius:7px;padding:7px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s,transform .1s,box-shadow .1s" onmouseover="this.style.background='#144880'" onmouseout="this.style.background='#1a5fa0'" onmousedown="this.style.background='#0f3560';this.style.transform='scale(0.97)';this.style.boxShadow='inset 0 2px 4px rgba(0,0,0,.2)'" onmouseup="this.style.background='#144880';this.style.transform='';this.style.boxShadow=''">⚡ 전체 일괄 시작</button>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:10px">
+          <button id="global-move-btn" onclick="openGlobalMoveBtn()" style="background:#fff;color:#555;border:1.5px solid #ccc;border-radius:7px;padding:7px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">타석 이동</button>
+          <button onclick="openBulkStart()" style="background:#fff;color:#1a5fa0;border:1.5px solid #1a5fa0;border-radius:7px;padding:7px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s" onmouseover="this.style.background='#eaf3fc'" onmouseout="this.style.background='#fff'">전체 일괄 시작</button>
         </div>
         <div class="sec-title">룸 타석</div>
         <div class="room-row" id="room-grid"></div>
@@ -808,7 +988,7 @@ body.sidebar-hidden #lesson-page{left:0}
             <input type="hidden" id="in-drink-id" value=""/>
             <input type="hidden" id="in-drink-temp" value=""/>
           </div>
-          <div class="fr"><label class="fl">메모 (선택)</label><input id="in-memo" type="text" placeholder="예: 정기회원, VIP 등"/></div>
+          <div class="fr"><label class="fl">메모 (선택)</label><input id="in-memo" type="text" placeholder="예: 끝자리, VIP 등"/></div>
           <button class="btn-add" onclick="addW()">+ 대기자 추가</button>
         </div>
       </div>
@@ -865,7 +1045,7 @@ body.sidebar-hidden #lesson-page{left:0}
             <input type="hidden" id="in-drink-id2" value=""/>
             <input type="hidden" id="in-drink-temp2" value=""/>
           </div>
-          <div class="fr"><label class="fl">메모 (선택)</label><input id="in-memo2" type="text" placeholder="예: 정기회원, VIP 등"/></div>
+          <div class="fr"><label class="fl">메모 (선택)</label><input id="in-memo2" type="text" placeholder="예: 끝자리, VIP 등"/></div>
           <button class="btn-add" onclick="addW2()">+ 대기자 추가</button>
         </div>
         <div class="pbox" style="margin-top:0">
@@ -882,6 +1062,17 @@ body.sidebar-hidden #lesson-page{left:0}
 <!-- ===== PAGE: 레슨 스케줄 ===== -->
 <div id="lesson-page" class="page" style="display:none">
 <div class="lesson-app">
+  <!-- Page header -->
+  <div class="page-header">
+    <div class="page-header-left">
+
+      <div class="page-header-title">레슨 스케줄</div>
+    </div>
+    <div class="page-header-right">
+      <button class="ls-pro-manage-btn" onclick="openProModal()">👤 프로</button>
+      <button class="ls-add-btn" onclick="openLessonForm()">+ 추가</button>
+    </div>
+  </div>
   <!-- Toolbar -->
   <div class="ls-toolbar">
     <div class="ls-toolbar-left">
@@ -889,10 +1080,6 @@ body.sidebar-hidden #lesson-page{left:0}
         <button class="ls-view-tab active" id="vt-all" onclick="setView('all')">전체</button>
         <button class="ls-view-tab" id="vt-pro" onclick="setView('pro')">프로별</button>
       </div>
-    </div>
-    <div class="ls-toolbar-right">
-      <button class="ls-pro-manage-btn" onclick="openProModal()">👤 프로</button>
-      <button class="ls-add-btn" onclick="openLessonForm()">+ 추가</button>
     </div>
   </div>
 
@@ -937,22 +1124,82 @@ body.sidebar-hidden #lesson-page{left:0}
 
 <!-- ===== PAGE: 회원 리스트 ===== -->
 <div id="member-page" class="page" style="display:none">
+  <div class="page-header">
+    <div class="page-header-left">
+
+      <div class="page-header-title">회원 리스트</div>
+    </div>
+    <div class="page-header-right">
+      <button onclick="mbOpenModal()" style="background:#1a5fa0;color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">+ 회원 등록</button>
+    </div>
+  </div>
 <div class="app">
-  <div class="header">
-    <h1>회원 리스트</h1>
-    <button onclick="mbOpenModal()" style="background:#1a5fa0;color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">+ 회원 등록</button>
-  </div>
 
-  <!-- 통계 -->
-  <div class="stats" style="grid-template-columns:repeat(1,1fr);max-width:200px">
-    <div class="sc"><div class="sl">전체 회원</div><div class="sv" id="mb-total">0</div></div>
-  </div>
-
-  <!-- 검색 바 -->
-  <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center">
-    <input id="mb-search" type="text" placeholder="이름·연락처·회원번호 검색…" oninput="mbRender()"
-      style="flex:1;font-size:13px;padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-family:inherit;outline:none"
-      onfocus="this.style.borderColor='#90bce0'" onblur="this.style.borderColor='#ddd'"/>
+  <!-- 검색 패널 -->
+  <div style="background:#fff;border:1px solid #e0e0e0;border-radius:10px;margin-bottom:12px;overflow:hidden">
+    <!-- 기본 검색바 -->
+    <div style="display:flex;gap:8px;padding:12px 14px;align-items:center;border-bottom:1px solid #f0f0f0">
+      <input id="mb-search" type="text" placeholder="이름·연락처·회원번호 검색…" oninput="mbRender()"
+        style="flex:1;font-size:13px;padding:8px 12px;border:1px solid #ddd;border-radius:7px;font-family:inherit;outline:none"
+        onfocus="this.style.borderColor='#90bce0'" onblur="this.style.borderColor='#ddd'"
+        onkeydown="if(event.key==='Enter')mbRender()"/>
+      <button onclick="mbRender()" style="background:#1a5fa0;color:#fff;border:none;border-radius:7px;padding:8px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">검색</button>
+      <button onclick="mbResetFilter()" style="background:#fff;color:#666;border:1px solid #ddd;border-radius:7px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap">초기화</button>
+      <button onclick="mbToggleDetail()" id="mb-detail-toggle" style="background:#fff;color:#1a5fa0;border:1px solid #90bce0;border-radius:7px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;display:flex;align-items:center;gap:4px">
+        상세검색 <span id="mb-detail-arrow">▲</span>
+      </button>
+    </div>
+    <!-- 상세 검색 패널 (접이식) -->
+    <div id="mb-detail-panel" style="display:block;padding:14px;background:#fafafa;border-top:1px solid #f0f0f0">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px 20px">
+        <!-- 성별 -->
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#888;margin-bottom:6px">성별</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer">
+              <input type="radio" name="mb-gender-r" value="" onchange="mbRender()" checked style="accent-color:#1a5fa0"/> 전체
+            </label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer">
+              <input type="radio" name="mb-gender-r" value="남" onchange="mbRender()" style="accent-color:#3b82f6"/> 남
+            </label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer">
+              <input type="radio" name="mb-gender-r" value="여" onchange="mbRender()" style="accent-color:#ec4899"/> 여
+            </label>
+          </div>
+        </div>
+        <!-- 정렬 -->
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#888;margin-bottom:6px">정렬</div>
+          <select id="mb-sort" onchange="mbRender()"
+            style="width:100%;font-size:12px;padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-family:inherit;outline:none;background:#fff">
+            <option value="newest">최근 등록순</option>
+            <option value="oldest">오래된순</option>
+            <option value="name">이름순</option>
+            <option value="num">회원번호순</option>
+          </select>
+        </div>
+        <!-- 지점 -->
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#888;margin-bottom:6px">지점</div>
+          <input id="mb-filter-branch" type="text" placeholder="지점명 입력…" oninput="mbRender()"
+            style="width:100%;box-sizing:border-box;font-size:12px;padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-family:inherit;outline:none"/>
+        </div>
+      </div>
+      <!-- 등록일 범위 -->
+      <div style="margin-top:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span style="font-size:11px;font-weight:700;color:#888;white-space:nowrap">등록일</span>
+        <input type="date" id="mb-filter-date-from" onchange="mbRender()"
+          style="font-size:12px;padding:6px 10px;border:1px solid #ddd;border-radius:6px;font-family:inherit;outline:none"/>
+        <span style="color:#bbb">~</span>
+        <input type="date" id="mb-filter-date-to" onchange="mbRender()"
+          style="font-size:12px;padding:6px 10px;border:1px solid #ddd;border-radius:6px;font-family:inherit;outline:none"/>
+      </div>
+    </div>
+    <!-- 결과 요약 바 -->
+    <div style="padding:8px 14px;background:#f7f8fa;border-top:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:12px;color:#888">총 <strong id="mb-total" style="color:#1a5fa0;font-size:13px">0</strong>명</span>
+      <span id="mb-filter-badge" style="font-size:11px;color:#1a5fa0;display:none;background:#eaf3fc;border:1px solid #90bce0;border-radius:10px;padding:2px 10px;font-weight:600">필터 적용됨</span>
+    </div>
   </div>
 
   <!-- 회원 목록 -->
@@ -966,7 +1213,6 @@ body.sidebar-hidden #lesson-page{left:0}
           <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#888">연락처</th>
           <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#888">회원번호</th>
           <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#888">지점</th>
-          <th style="padding:10px 14px;text-align:center;font-size:11px;font-weight:700;color:#888;width:60px"></th>
         </tr>
       </thead>
       <tbody id="mb-tbody"></tbody>
@@ -979,27 +1225,69 @@ body.sidebar-hidden #lesson-page{left:0}
 <!-- ===== PAGE: 회원 상세 ===== -->
 <div id="member-detail-page" class="page" style="display:none">
 <div class="app">
-  <button class="mbd-back" onclick="mbDetailClose()">← 회원 리스트</button>
   <div class="mbd-layout">
 
     <!-- 좌측 프로필 -->
     <div class="mbd-profile">
-      <div class="mbd-profile-top">
-        <div class="mbd-avatar" id="mbd-avatar"></div>
-        <div class="mbd-pname">
-          <span id="mbd-name"></span>
-          <span class="mbd-gender-badge" id="mbd-gender-badge"></span>
+      <!-- 조회 모드 -->
+      <div id="mbd-view-mode">
+        <div class="mbd-profile-top">
+          <div class="mbd-avatar" id="mbd-avatar"></div>
+          <div class="mbd-pname">
+            <span id="mbd-name"></span>
+            <span class="mbd-gender-badge" id="mbd-gender-badge"></span>
+          </div>
+          <div class="mbd-phone-txt" id="mbd-phone"></div>
         </div>
-        <div class="mbd-phone-txt" id="mbd-phone"></div>
+        <div class="mbd-profile-rows">
+          <div class="mbd-prow"><span class="mbd-prow-label">회원번호</span><span class="mbd-prow-val" id="mbd-num"></span></div>
+          <div class="mbd-prow"><span class="mbd-prow-label">지점</span><span class="mbd-prow-val" id="mbd-branch"></span></div>
+          <div class="mbd-prow"><span class="mbd-prow-label">등록일</span><span class="mbd-prow-val" id="mbd-date"></span></div>
+        </div>
+        <div class="mbd-profile-btns">
+          <button class="mbd-btn-edit" onclick="mbdStartEdit()">회원 수정</button>
+          <button class="mbd-btn-del"  onclick="mbDetailDelete()">회원 삭제</button>
+        </div>
       </div>
-      <div class="mbd-profile-rows">
-        <div class="mbd-prow"><span class="mbd-prow-label">회원번호</span><span class="mbd-prow-val" id="mbd-num"></span></div>
-        <div class="mbd-prow"><span class="mbd-prow-label">지점</span><span class="mbd-prow-val" id="mbd-branch"></span></div>
-        <div class="mbd-prow"><span class="mbd-prow-label">등록일</span><span class="mbd-prow-val" id="mbd-date"></span></div>
-      </div>
-      <div class="mbd-profile-btns">
-        <button class="mbd-btn-edit" onclick="mbDetailEdit()">회원 수정</button>
-        <button class="mbd-btn-del"  onclick="mbDetailDelete()">회원 삭제</button>
+      <!-- 수정 모드 -->
+      <div id="mbd-edit-mode" style="display:none;padding:16px">
+        <div style="font-size:13px;font-weight:800;color:#1a5fa0;margin-bottom:14px">회원 정보 수정</div>
+        <div style="margin-bottom:10px">
+          <label style="font-size:11px;font-weight:700;color:#888;display:block;margin-bottom:4px">이름 *</label>
+          <input id="mbd-edit-name" type="text" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid #ddd;border-radius:7px;font-size:13px;font-family:inherit;outline:none" onfocus="this.style.borderColor='#90bce0'" onblur="this.style.borderColor='#ddd'"/>
+        </div>
+        <div style="margin-bottom:10px">
+          <label style="font-size:11px;font-weight:700;color:#888;display:block;margin-bottom:4px">성별</label>
+          <div style="display:flex;gap:6px">
+            <button class="mbtn m mbd-eg-btn" data-val="남" onclick="mbdEditGender(this)" style="flex:1;padding:7px;font-size:12px;text-align:center">남</button>
+            <button class="mbtn mbd-eg-btn" data-val="여" onclick="mbdEditGender(this)" style="flex:1;padding:7px;font-size:12px;text-align:center">여</button>
+          </div>
+          <input type="hidden" id="mbd-edit-gender" value="남"/>
+        </div>
+        <div style="margin-bottom:10px">
+          <label style="font-size:11px;font-weight:700;color:#888;display:block;margin-bottom:4px">연락처 *</label>
+          <div style="display:flex;align-items:center;gap:4px">
+            <input id="mbd-edit-phone-1" type="tel" inputmode="numeric" maxlength="3" value="010"
+              style="width:0;flex:3;min-width:0;text-align:center;font-size:12px;padding:7px 4px;border:1px solid #ddd;border-radius:6px;font-family:inherit;outline:none;background:#f8f9fa;color:#555"
+              oninput="mbdPhonePart(this,1)" onfocus="this.select()"/>
+            <span style="color:#bbb;font-size:13px;flex-shrink:0">-</span>
+            <input id="mbd-edit-phone-2" type="tel" inputmode="numeric" maxlength="4" placeholder="0000"
+              style="width:0;flex:4;min-width:0;text-align:center;font-size:12px;padding:7px 4px;border:1px solid #ddd;border-radius:6px;font-family:inherit;outline:none"
+              oninput="mbdPhonePart(this,2)" onfocus="this.select()"/>
+            <span style="color:#bbb;font-size:13px;flex-shrink:0">-</span>
+            <input id="mbd-edit-phone-3" type="tel" inputmode="numeric" maxlength="4" placeholder="0000"
+              style="width:0;flex:4;min-width:0;text-align:center;font-size:12px;padding:7px 4px;border:1px solid #ddd;border-radius:6px;font-family:inherit;outline:none"
+              oninput="mbdPhonePart(this,3)" onfocus="this.select()"/>
+          </div>
+        </div>
+        <div style="margin-bottom:10px">
+          <label style="font-size:11px;font-weight:700;color:#888;display:block;margin-bottom:4px">회원번호 *</label>
+          <input id="mbd-edit-num" type="text" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid #ddd;border-radius:7px;font-size:13px;font-family:inherit;outline:none" onfocus="this.style.borderColor='#90bce0'" onblur="this.style.borderColor='#ddd'"/>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:14px">
+          <button onclick="mbdSaveEdit()" style="flex:1;padding:9px;background:#1a5fa0;color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">저장</button>
+          <button onclick="mbdCancelEdit()" style="padding:9px 14px;background:#fff;color:#555;border:1px solid #ddd;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">취소</button>
+        </div>
       </div>
     </div>
 
@@ -1053,7 +1341,19 @@ body.sidebar-hidden #lesson-page{left:0}
     </div>
     <div class="mr">
       <label>연락처 *</label>
-      <input id="mb-phone" type="tel" placeholder="010-0000-0000" value="010-" oninput="mbPhoneFormat(this)"/>
+      <div style="display:flex;align-items:center;gap:6px">
+        <input id="mb-phone-1" type="tel" inputmode="numeric" maxlength="3" value="010"
+          style="width:54px;text-align:center;font-size:13px;padding:7px 6px;border:1px solid #ddd;border-radius:6px;font-family:inherit;outline:none;background:#f8f9fa;color:#555"
+          oninput="mbPhonePart(this,1)" onfocus="this.select()"/>
+        <span style="color:#bbb;font-size:14px;flex-shrink:0">-</span>
+        <input id="mb-phone-2" type="tel" inputmode="numeric" maxlength="4" placeholder="0000"
+          style="width:68px;text-align:center;font-size:13px;padding:7px 6px;border:1px solid #ddd;border-radius:6px;font-family:inherit;outline:none"
+          oninput="mbPhonePart(this,2)" onfocus="this.select()"/>
+        <span style="color:#bbb;font-size:14px;flex-shrink:0">-</span>
+        <input id="mb-phone-3" type="tel" inputmode="numeric" maxlength="4" placeholder="0000"
+          style="width:68px;text-align:center;font-size:13px;padding:7px 6px;border:1px solid #ddd;border-radius:6px;font-family:inherit;outline:none"
+          oninput="mbPhonePart(this,3)" onfocus="this.select()"/>
+      </div>
     </div>
     <div class="mr">
       <label>회원번호 * <span style="font-size:10px;color:#aaa;font-weight:400">(전화번호 뒷자리 자동입력)</span></label>
@@ -1075,7 +1375,53 @@ body.sidebar-hidden #lesson-page{left:0}
     </div>
   </div>
 </div>
+<!-- ===== PAGE: 이용권 관리 ===== -->
+<div id="ticket-page" class="page" style="display:none">
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-header-title">이용권 관리</div>
+    </div>
+    <div class="page-header-right">
+      <button onclick="tkOpenModal(null)" style="background:#1a5fa0;color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">+ 이용권 등록</button>
+    </div>
+  </div>
+  <div class="tk-layout">
+    <!-- 왼쪽 사이드바 -->
+    <div class="tk-sidebar">
+      <div class="tk-search-wrap">
+        <input id="tk-search" type="text" placeholder="이용권 검색" oninput="tkRender()"/>
+      </div>
+      <div id="tk-sidebar-list"></div>
+    </div>
+    <!-- 오른쪽 상세 -->
+    <div class="tk-detail">
+      <div id="tk-detail-empty" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:300px;color:#ccc;font-size:14px;gap:8px">
+        <div style="font-size:32px">📋</div>
+        <div>왼쪽에서 이용권을 선택하세요</div>
+      </div>
+      <div id="tk-detail-content" style="display:none">
+        <div class="tk-detail-header">
+          <div>
+            <div class="tk-detail-title" id="tk-detail-title"></div>
+            <div class="tk-detail-sub" id="tk-detail-sub"></div>
+          </div>
+          <button class="tk-btn-edit" onclick="tkOpenModal(tkSelectedId)" style="font-size:12px;padding:5px 14px">수정 &gt;</button>
+        </div>
+        <div id="tk-detail-rows"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 </div><!-- end .main-wrapper -->
+
+<!-- 이용권 등록/수정 모달 -->
+<div class="ov" id="tk-ov">
+  <div class="modal" style="max-width:440px;width:94%">
+    <div class="m-ttl" id="tk-ttl">이용권 등록</div>
+    <div id="tk-body"></div>
+  </div>
+</div>
 
 <!-- Lesson Add/Edit Modal -->
 <div class="ov" id="lesson-ov">
@@ -1121,7 +1467,7 @@ body.sidebar-hidden #lesson-page{left:0}
     </div>
     <div class="mr">
       <label>메모</label>
-      <input type="text" id="ls-memo" placeholder="예: 초보자, 특별수업 등"/>
+      <input type="text" id="ls-memo" placeholder="예: 입문자, 요청사항 등"/>
     </div>
     <div class="mbtns">
       <button class="m-cx" onclick="closeLessonModal()">취소</button>
@@ -1236,6 +1582,8 @@ function saveState(){
     localStorage.setItem('tdf_lessons', JSON.stringify({lsLessons,lsLessonId,lsPros}));
     localStorage.setItem('tdf_members', JSON.stringify({members,mbNextId}));
   }catch(e){}
+  // 홈 현황판 갱신
+  if(typeof homeRender==='function' && document.getElementById('home-stats')) homeRender();
 }
 
 function init(){
@@ -1314,8 +1662,10 @@ function renderW2(){
       '<div id="wu2-'+w.id+'"></div>'+
       '<div class="wi-bot" style="justify-content:flex-end">'+
       '<div class="wbtns">'+
-      '<button class="btn-sm ok" onclick="assignW2tab('+w.id+')">배정</button>'+
-      '<button class="btn-sm ng" onclick="removeW('+w.id+')">삭제</button>'+
+      (assignMode&&assignMode.wid===w.id
+        ? '<button class="btn-sm ng" onclick="cancelAssignMode()">배정 취소</button>'
+        : '<button class="btn-sm ok" onclick="assignW2tab('+w.id+')">배정</button>')+
+      '<button class="btn-sm ng" onclick="removeW('+w.id+')" style="'+(assignMode&&assignMode.wid===w.id?'opacity:.3;pointer-events:none':'')+'">삭제</button>'+
       '</div></div></div>';
   }).join('');
   requestAnimationFrame(()=>waiting.forEach(w=>updUrg2(w.id)));
@@ -1348,13 +1698,27 @@ function renderBaySummary(){
   const empty=allB.filter(b=>b.status==='empty'&&!b.mark);
   if(!used.length&&!empty.length){c.innerHTML='<div style="color:#bbb;font-size:12px;text-align:center;padding:10px">타석 정보 없음</div>';return}
   let h='';
+  if(empty.length){
+    h+='<div style="font-size:11px;color:#888;font-weight:600;margin-bottom:5px">빈 타석 ('+empty.length+')</div>';
+    h+=empty.map(b=>{
+      const lbl=b.kind==='room'?'R'+b.num+' 룸':b.num+'번';
+      const isActive=assignMode;
+      return '<button onclick="doAssign('+b.idx+',\''+b.kind+'\')" style="'+
+        'display:inline-block;margin:2px 3px;padding:4px 10px;font-size:12px;font-weight:700;'+
+        'border-radius:6px;cursor:'+(isActive?'pointer':'default')+';font-family:inherit;'+
+        'border:1.5px solid '+(isActive?'#1a8a5e':'#ddd')+';'+
+        'background:'+(isActive?'#f0faf4':'#f7f7f7')+';'+
+        'color:'+(isActive?'#1a5e30':'#999')+';'+
+        'transition:all .12s">'+lbl+'</button>';
+    }).join('');
+    if(used.length) h+='<div style="border-top:1px solid #f0f0f0;margin:10px 0 8px"></div>';
+  }
   if(used.length){
     h+='<div style="font-size:11px;color:#888;font-weight:600;margin-bottom:5px">사용 중 ('+used.length+')</div>';
     h+=used.map(b=>{
       const r=b.startTime?rem(b.startTime,b.dur):null;
       const lbl=b.kind==='room'?'R'+b.num+' 룸':b.num+'번';
       const urgCls=r!==null&&r<=5?'color:#d03030':r!==null&&r<=10?'color:#c07000':'color:#1a5080';
-      // drink badge
       let drinkHtml='';
       if(!b.drinkId){
         drinkHtml='<button class="btn-sm" style="font-size:10px;padding:2px 7px;border-color:#f59e0b;color:#92400e;background:#fffbeb" onclick="openBayDrinkModal('+b.idx+',\''+b.kind+'\');renderBaySummary()">🥤 음료 선택</button>';
@@ -1381,10 +1745,6 @@ function renderBaySummary(){
         '<div style="margin-top:4px;padding-left:50px">'+drinkHtml+'</div>'+
         '</div>';
     }).join('');
-  }
-  if(empty.length){
-    h+='<div style="font-size:11px;color:#888;font-weight:600;margin:10px 0 5px">빈 타석 ('+empty.length+')</div>';
-    h+='<div style="font-size:12px;color:#666;">'+empty.map(b=>b.kind==='room'?'R'+b.num+' 룸':b.num+'번').join(', ')+'</div>';
   }
   c.innerHTML=h;
 }
@@ -1546,6 +1906,10 @@ function makeBay(bay,idx,kind){
     cls+=tCls(bay.type);
     if(r!==null&&r<=5)cls+=' urg-hi';
     else if(r!==null&&r<=10)cls+=' urg-lo';
+    // 선택된 타석 강조 (단계1 완료)
+    if(movePendingMode&&movePendingMode.idx===idx&&movePendingMode.kind===kind) cls+=' move-source';
+    // 이동 중 소스 타석 강조 (단계2)
+    if(moveMode&&moveMode.idx===idx&&moveMode.kind===kind) cls+=' move-source';
   }else{
     cls+='empty';
     if(assignMode){
@@ -1553,6 +1917,10 @@ function makeBay(bay,idx,kind){
       const okNormal=!assignMode.isRoom&&kind==='normal';
       if(okRoom||okNormal) cls+=' assign-target';
       else cls+=' assign-dim';
+    }
+    // 단계2: 이동 가능한 빈 타석 강조 (모든 빈 타석 허용)
+    if(moveMode){
+      cls+=' move-target';
     }
   }
 
@@ -1581,60 +1949,99 @@ function makeBay(bay,idx,kind){
   div.className=cls;
 
   const lbl=kind==='room'?'R'+bay.num+' 룸':bay.num+'번';
-  let h='<div class="b-num">'+lbl+'</div>';
+  let h='';
+  let btnsHtml='';
 
   if(bay.status!=='empty'){
-    h+='<div class="b-btns"><button class="dur-btn" data-i="'+idx+'" data-k="'+kind+'">⏱</button><button class="end-btn" data-i="'+idx+'" data-k="'+kind+'">종료</button></div>';
-    h+='<div class="b-name">'+esc(bay.name)+'</div>';
-    h+='<div class="b-tag">'+tLbl(bay.type)+'</div>';
-    if(r!==null){
-      const s=remSec(bay.startTime,bay.dur);
-      // Gauge bar
-      const pct=bay.dur>0?Math.max(0,Math.min(100,100-Math.round(r/bay.dur*100))):0;
-      const gColor=r<=5?'#e06060':r<=10?'#e09030':'#5cb85c';
-      const gBg=r<=5?'#f7c0c0':r<=10?'#f5dfa0':'#aadda0';
-      h+='<div class="b-gauge-wrap" style="background:'+gBg+'">'+
-         '<div class="b-gauge-fill" style="width:'+pct+'%;background:'+gColor+'"></div>'+
-         '<span class="b-gauge-lbl">'+(s===0?'⚠ 시간 종료':remStr(bay.startTime,bay.dur)+' 남음')+'</span>'+
-         '</div>';
-    }
-    if(bay.startTime) h+='<div class="b-times">'+sT(bay.startTime)+' ~ '+eT(bay.startTime,bay.dur)+'</div>';
-    // waiting tag
-    const wk=(kind==='room'?'r':'n')+bay.num;
-    if(wmap[wk]) h+='<span class="b-wait">⏳ 대기: '+esc(wmap[wk])+'</span>';
-    // drink badge
     let drinkBayId=bay.drinkId, drinkBayTemp=bay.drinkTemp, drinkBayDone=bay.drinkDone;
     const bayIdx=idx, bayKind=kind;
+    let drinkBtn='';
     if(!drinkBayId){
-      h+='<button class="btn-sm" style="font-size:10px;padding:2px 7px;margin-top:4px;border-color:#f59e0b;color:#92400e;background:#fffbeb" onclick="openBayDrinkModal('+bayIdx+',\''+bayKind+'\')">🥤 음료 선택</button>';
+      drinkBtn='<button class="btn-sm" style="font-size:9px;padding:2px 5px;border-color:#ddd;color:#888;background:#f5f5f5" onclick="event.stopPropagation();openBayDrinkModal('+bayIdx+',\''+bayKind+'\')">🥤 음료선택</button>';
     } else if(drinkBayId==='none'){
-      h+='<button class="btn-sm" style="font-size:10px;padding:2px 7px;margin-top:4px;border-color:#ccc;color:#888;background:#f5f5f5" onclick="openBayDrinkModal('+bayIdx+',\''+bayKind+'\')">🚫 음료없음</button>';
+      drinkBtn='<button class="btn-sm" style="font-size:9px;padding:2px 5px;border-color:#ddd;color:#aaa;background:#f5f5f5" onclick="event.stopPropagation();openBayDrinkModal('+bayIdx+',\''+bayKind+'\')">🚫 음료없음</button>';
     } else {
       const dk=DRINKS.find(x=>x.id===drinkBayId);
       const dlbl=dk?(drinkBayTemp?drinkBayTemp+' ':'')+dk.name:'';
       if(drinkBayDone){
-        h+='<button class="btn-sm" style="font-size:10px;padding:2px 7px;margin-top:4px;border-color:#8cc870;color:#1a5010;background:#f0faf4" onclick="openBayDrinkModal('+bayIdx+',\''+bayKind+'\')">✅ '+esc(dlbl)+'</button>';
+        drinkBtn='<button class="btn-sm" style="font-size:9px;padding:2px 5px;border-color:#b8dda0;color:#2a6010;background:#eaf6e0" onclick="event.stopPropagation();openBayDrinkModal('+bayIdx+',\''+bayKind+'\')">✅ '+esc(dlbl)+'</button>';
       } else {
-        h+='<span style="display:inline-flex;align-items:center;gap:3px;margin-top:4px">'+
-           '<button class="btn-sm" style="font-size:10px;padding:2px 7px;border-color:#ffc069;color:#d46b08;background:#fff7e6" onclick="openBayDrinkModal('+bayIdx+',\''+bayKind+'\')">⏳ '+esc(dlbl)+'</button>'+
-           '<button class="btn-sm ok" style="font-size:10px;padding:2px 7px;font-weight:700" onclick="markBayDrinkDone('+bayIdx+',\''+bayKind+'\')">제공완료</button>'+
-           '</span>';
+        drinkBtn='<button class="btn-sm" style="font-size:9px;padding:2px 5px;border-color:#f0c080;color:#a06010;background:#fff8ee" onclick="event.stopPropagation();openBayDrinkModal('+bayIdx+',\''+bayKind+'\')">⏳ '+esc(dlbl)+'</button>'+
+                 '<button class="btn-sm ok" style="font-size:9px;padding:2px 5px;font-weight:700" onclick="event.stopPropagation();markBayDrinkDone('+bayIdx+',\''+bayKind+'\')">제공</button>';
       }
     }
+    // 뚜껑 (⏱/종료 버튼만 — 이동은 통합 버튼으로)
+    h+='<div class="b-cap">'+
+         '<span class="b-cap-lbl">'+lbl+'</span>'+
+         '<span class="b-cap-btns">'+
+           '<button class="dur-btn" data-i="'+idx+'" data-k="'+kind+'">⏱</button>'+
+           '<button class="end-btn" data-i="'+idx+'" data-k="'+kind+'">종료</button>'+
+         '</span>'+
+       '</div>';
+    // 본문
+    h+='<div class="b-body">';
+    h+='<div style="display:flex;justify-content:flex-end;margin-bottom:4px">'+drinkBtn+'</div>';
+    // 이름 (3.5행 위치, 가운데)
+    h+='<div class="b-name" style="text-align:center;padding-top:18px">'+esc(bay.name)+'</div>';
+    h+='<div style="flex:1"></div>';
+    // 대기
+    const wk=(kind==='room'?'r':'n')+bay.num;
+    if(wmap[wk]) h+='<span class="b-wait">⏳ 대기: '+esc(wmap[wk])+'</span>';
+    // 시간 — 게이지바 바로 위 딱 붙임
+    if(bay.startTime) h+='<div class="b-times" style="margin-top:auto;margin-bottom:2px;padding-top:0">'+sT(bay.startTime)+' ~ '+eT(bay.startTime,bay.dur)+'</div>';
+    // 게이지바
+    if(r!==null){
+      const s=remSec(bay.startTime,bay.dur);
+      const pct=bay.dur>0?Math.max(0,Math.min(100,100-Math.round(r/bay.dur*100))):0;
+      const gColor=r<=5?'#e06060':r<=10?'#e09030':'#00b87f';
+      const gBg=r<=5?'#f7c0c0':r<=10?'#f5dfa0':'#b0f0da';
+      h+='<div class="b-gauge-wrap" style="background:'+gBg+'">'+
+         '<div class="b-gauge-fill" style="width:'+pct+'%;background:'+gColor+'"></div>'+
+         '<span class="b-gauge-lbl">'+(s===0?'⚠ 시간 종료':remStr(bay.startTime,bay.dur))+'</span>'+
+         '</div>';
+    } else if(bay.startTime){
+      // startTime 있지만 r===null (dur 없을 때) — 시간만 있고 게이지 없는 경우 margin-top:auto 이미 적용됨
+    }
+    h+='</div>'; // b-body 닫기
   } else {
-    h+='<div class="b-name" style="color:#bbb">비어있음</div>';
+    h+='<div class="b-cap empty-cap"><span class="b-cap-lbl">'+lbl+'</span></div>';
+    h+='<div class="b-body">';
+    h+='<div class="b-name" style="color:#bbb;text-align:center;margin:auto 0;display:flex;align-items:center;justify-content:center;flex:1">비어있음</div>';
+    h+='</div>';
   }
   if(badge) h+=badge;
   div.innerHTML=h;
 
-  const eb=div.querySelector('.end-btn');
+  // 종료 버튼
+  const eb=div.querySelector('.end-btn:not(.mv-btn)');
   if(eb) eb.addEventListener('click',function(e){e.stopPropagation();e.preventDefault();endBay(+this.dataset.i,this.dataset.k)});
   const db=div.querySelector('.dur-btn');
   if(db) db.addEventListener('click',function(e){e.stopPropagation();e.preventDefault();openDur(+this.dataset.i,this.dataset.k,e)});
 
   div.addEventListener('click',function(e){
     const arr=kind==='room'?rooms:bays;
-    if(arr[idx].status!=='empty')return;
+    // 단계3: moveMode 중 — 빈 타석 클릭 → 이동 실행
+    if(moveMode){
+      if(arr[idx].status==='empty') doMove(idx,kind);
+      else showToast('빈 타석을 클릭해주세요','warn');
+      return;
+    }
+    // 단계1: 이용중 타석 클릭 → pending 저장 (이미 선택된 타석 다시 클릭하면 선택 해제)
+    if(arr[idx].status!=='empty'){
+      if(movePendingMode&&movePendingMode.idx===idx&&movePendingMode.kind===kind){
+        // 같은 타석 다시 클릭 → 선택 해제
+        movePendingMode=null;
+        updateMoveBtnStyle();
+        renderBays();
+        clearAlertPanel();
+      } else {
+        // 새 타석 선택
+        movePendingMode={idx,kind,isRoom:kind==='room'};
+        updateMoveBtnStyle();
+        renderBays();
+      }
+      return;
+    }
     bayClick(idx,kind);
   });
   return div;
@@ -1694,11 +2101,11 @@ function openBulkStart(){
     (roomList?'<div>룸: <strong>'+roomList+'</strong></div>':'')+
     '</div>';
   mst={bulk:true};
-  document.getElementById('m-ttl').textContent='▶ 전체 시작 ('+total+'개)';
+  document.getElementById('m-ttl').textContent='전체 일괄 시작 ('+total+'개)';
   document.getElementById('m-body').innerHTML=
     listHtml+
     '<div class="mr"><label>시작 시간</label><input id="b-time" type="time" value="'+pad(n.getHours())+':'+pad(n.getMinutes())+'"/></div>'+
-    '<div class="mbtns"><button class="m-cx" onclick="closeM()">취소</button><button class="m-ok" onclick="confirmBulkStart()">전체 시작</button></div>';
+    '<div class="mbtns"><button class="m-cx" onclick="closeM()">취소</button><button class="m-ok" onclick="confirmBulkStart()">일괄 시작</button></div>';
   openM();
 }
 function confirmBulkStart(){
@@ -1728,17 +2135,82 @@ function bayClick(idx,kind){
   const arr=kind==='room'?rooms:bays;
   const lbl=kind==='room'?'R'+arr[idx].num+' 룸':arr[idx].num+'번 타석';
   document.getElementById('m-ttl').textContent=lbl+' 이용 시작';
-  const typeOpts=kind==='room'
-    ?'<div class="mr"><label>이용 유형</label><select id="m-type"><option value="룸레슨">룸레슨 (75분)</option><option value="시설이용">시설이용 (75분)</option></select></div>'
-    :'<div class="mr"><label>이용 유형</label><select id="m-type"><option value="시설이용">시설이용 (75분)</option><option value="레슨">레슨 (75분)</option></select></div>';
+  const types=kind==='room'
+    ?[{v:'시설이용',icon:'🏌️'},{v:'룸레슨',icon:'🚪'}]
+    :[{v:'시설이용',icon:'🏌️'},{v:'레슨',icon:'🎓'}];
+  const typeOpts='<div class="mr"><label>이용 유형</label>'+
+    '<div style="display:flex;gap:6px;margin-top:4px">'+
+    types.map((t,i)=>
+      '<button type="button" onclick="mSelType(this,\''+t.v+'\')" '+
+      'style="flex:1;padding:8px 4px;border:2px solid '+(i===0?'#1a5fa0':'#e0e0e0')+';border-radius:8px;cursor:pointer;text-align:center;background:'+(i===0?'#eaf3fc':'#fff')+';font-family:inherit;transition:all .15s">'+
+      '<span style="font-size:18px;display:block;margin-bottom:2px">'+t.icon+'</span>'+
+      '<span style="font-size:11px;font-weight:700;color:'+(i===0?'#1a4a80':'#555')+'">'+t.v+'</span>'+
+      '</button>'
+    ).join('')+
+    '</div>'+
+    '<input type="hidden" id="m-type" value="'+types[0].v+'"/></div>';
   const n=new Date();
   document.getElementById('m-body').innerHTML=
-    '<div class="mr"><label>회원 이름</label><input id="m-name" type="text" placeholder="이름 입력" onkeydown="if(event.key===\'Enter\')confirmStart()"/></div>'+
+    '<div class="mr" style="position:relative">'+
+      '<label>회원 이름 / 전화번호</label>'+
+      '<input id="m-name" type="text" placeholder="이름 또는 전화번호 입력" autocomplete="off"'+
+        ' oninput="mMbSearch(this.value)"'+
+        ' onkeydown="mMbKeydown(event)"/>'+
+      '<div id="m-mb-dropdown" style="display:none;position:absolute;left:0;right:0;top:100%;z-index:200;background:#fff;border:1px solid #ddd;border-radius:0 0 8px 8px;box-shadow:0 4px 12px rgba(0,0,0,.12);max-height:180px;overflow-y:auto"></div>'+
+    '</div>'+
     typeOpts+
     '<div class="mr"><label>시작 시간</label><input id="m-time" type="time" value="'+pad(n.getHours())+':'+pad(n.getMinutes())+'"/></div>'+
     '<div class="mbtns"><button class="m-cx" onclick="closeM()">취소</button><button class="m-ok" onclick="confirmStart()">시작</button></div>';
   openM();
   setTimeout(()=>{const el=document.getElementById('m-name');if(el)el.focus()},30);
+}
+function mSelType(btn,val){
+  const wrap=btn.parentNode;
+  wrap.querySelectorAll('button').forEach(b=>{
+    b.style.border='2px solid #e0e0e0';b.style.background='#fff';
+    b.querySelector('span:last-child').style.color='#555';
+  });
+  btn.style.border='2px solid #1a5fa0';btn.style.background='#eaf3fc';
+  btn.querySelector('span:last-child').style.color='#1a4a80';
+  document.getElementById('m-type').value=val;
+}
+let _mMbIdx=-1;
+function mMbSearch(q){
+  _mMbIdx=-1;
+  const dd=document.getElementById('m-mb-dropdown');if(!dd)return;
+  const v=q.trim();
+  if(!v){dd.style.display='none';dd.innerHTML='';return;}
+  const res=members.filter(m=>
+    m.name.includes(v)||(m.phone||'').replace(/-/g,'').includes(v.replace(/-/g,''))||(m.num||'').includes(v)
+  ).slice(0,8);
+  if(!res.length){dd.style.display='none';dd.innerHTML='';return;}
+  dd.innerHTML=res.map((m,i)=>
+    '<div data-idx="'+i+'" onmousedown="mMbPick('+m.id+')" '+
+    'style="padding:9px 12px;cursor:pointer;border-bottom:1px solid #f5f5f5;display:flex;align-items:center;gap:10px" '+
+    'onmouseover="this.style.background=\'#f0f6ff\'" onmouseout="this.style.background=\'\'">'+
+    '<span style="font-size:13px;font-weight:700;color:#111">'+esc(m.name)+'</span>'+
+    '<span style="font-size:11px;color:#aaa">'+esc(m.phone||'')+'</span>'+
+    (m.num?'<span style="font-size:10px;color:#bbb;margin-left:auto">'+esc(m.num)+'</span>':'')+
+    '</div>'
+  ).join('');
+  dd.style.display='block';
+}
+function mMbPick(id){
+  const m=members.find(x=>x.id===id);if(!m)return;
+  const inp=document.getElementById('m-name');if(inp)inp.value=m.name;
+  const dd=document.getElementById('m-mb-dropdown');if(dd){dd.style.display='none';dd.innerHTML='';}
+}
+function mMbKeydown(e){
+  const dd=document.getElementById('m-mb-dropdown');
+  if(!dd||dd.style.display==='none')return;
+  const items=dd.querySelectorAll('[data-idx]');
+  if(!items.length)return;
+  if(e.key==='ArrowDown'){e.preventDefault();_mMbIdx=Math.min(_mMbIdx+1,items.length-1);}
+  else if(e.key==='ArrowUp'){e.preventDefault();_mMbIdx=Math.max(_mMbIdx-1,0);}
+  else if(e.key==='Enter'&&_mMbIdx>=0){e.preventDefault();items[_mMbIdx].dispatchEvent(new MouseEvent('mousedown'));return;}
+  else if(e.key==='Escape'){dd.style.display='none';return;}
+  else{return;}
+  items.forEach((el,i)=>el.style.background=i===_mMbIdx?'#e8f0ff':'');
 }
 
 /* ── CONFIRM HELPERS ── */
@@ -1758,7 +2230,7 @@ function confirmStart(){
 }
 /* ── ESC + BACKDROP ── */
 document.addEventListener('keydown',function(e){
-  if(e.key==='Escape'){closeM();closeDur();closeBe()}
+  if(e.key==='Escape'){closeM();closeDur();closeBe();if(moveMode||moveSelectMode||movePendingMode)cancelMoveMode();if(assignMode)cancelAssignMode();}
 });
 document.getElementById('main-ov').addEventListener('click',function(e){if(e.target===this)closeM()});
 document.getElementById('dur-ov').addEventListener('click',function(e){if(e.target===this)closeDur()});
@@ -1794,17 +2266,23 @@ function showAssignBanner(w){
   if(_alertTimer)clearTimeout(_alertTimer);
   _alertMode='assign';
   const typeLbl=w.type==='룸레슨'?'룸 타석':'일반 타석';
-  setAlertPanel('mode-assign','👆',w.name+'님 배정 중',typeLbl+'을 클릭하세요','취소');
+  setAlertPanel('mode-assign','👆',w.name+'님 배정 중',typeLbl+'을 클릭하세요','');
 }
 
 function cancelAssignMode(){
   assignMode=null;
   clearAlertPanel();
   renderBays();
+  renderW();
+  renderW2();
+  renderBaySummary();
 }
 
 function closeAlert(){
-  if(_alertMode==='assign'){cancelAssignMode();}
+  if(_alertMode==='assign'){
+    if(moveMode)cancelMoveMode();
+    else cancelAssignMode();
+  }
   else{clearAlertPanel();}
 }
 
@@ -1887,12 +2365,89 @@ let assignMode=null; // {wid, isRoom}
 function assignW(id){
   const w=waiting.find(x=>x.id===id);if(!w)return;
   assignMode={wid:id,isRoom:w.type==='룸레슨'};
+  // 대기자 배치 탭으로 전환 (event 없이 직접)
+  currentTab='bay';
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-bay').classList.add('active');
+  document.querySelector('.tab-btn').classList.add('active');
+  renderBays();
+  renderW();
+  renderW2();
+  showAssignBanner(w);
+}
+function assignW2tab(id){
+  const w=waiting.find(x=>x.id===id);if(!w)return;
+  assignMode={wid:id,isRoom:w.type==='룸레슨'};
+  renderW();
+  renderW2();
+  renderBaySummary();
   renderBays();
   showAssignBanner(w);
-  // 대기자 배치 탭으로 전환
-  switchTab('bay');
 }
-function assignW2tab(id){assignW(id);}
+
+/* ── MOVE MODE ── */
+// 단계1: 이용중 타석 클릭 → movePendingMode 저장
+// 단계2: 이동 버튼 클릭 → moveMode 진입
+// 단계3: 빈 타석 클릭 → 이동 완료
+let moveSelectMode=false; // 미사용(하위호환)
+let movePendingMode=null; // 단계1 완료: {idx,kind,isRoom}
+let moveMode=null;        // 단계2 완료: 빈 타석 대기 중
+
+function openGlobalMoveBtn(){
+  if(moveMode){ cancelMoveMode(); return; }
+  if(!movePendingMode){
+    showToast('먼저 이동할 이용중 타석을 클릭해주세요','warn'); return;
+  }
+  // 단계2: moveMode 진입
+  moveMode=movePendingMode;
+  movePendingMode=null;
+  updateMoveBtnStyle();
+  renderBays();
+}
+
+function updateMoveBtnStyle(){
+  const btn=document.getElementById('global-move-btn');
+  if(!btn)return;
+  if(moveMode){
+    btn.style.background='#fff0f0';btn.style.borderColor='#e09090';btn.style.color='#c03030';
+    btn.textContent='이동 취소';
+  } else if(movePendingMode){
+    btn.style.background='#fff';btn.style.borderColor='#1a5fa0';btn.style.color='#1a5fa0';
+    btn.textContent='타석 이동';
+  } else {
+    btn.style.background='#fff';btn.style.borderColor='#ccc';btn.style.color='#555';
+    btn.textContent='타석 이동';
+  }
+}
+
+function startMoveMode(idx,kind){} // 하위호환
+
+function doMove(idx,kind){
+  if(!moveMode)return;
+  const srcArr=moveMode.kind==='room'?rooms:bays;
+  const dstArr=kind==='room'?rooms:bays;
+  const src=srcArr[moveMode.idx];
+  const dst=dstArr[idx];
+  if(!dst||dst.status!=='empty'){showToast('빈 타석을 선택해주세요','warn');return;}
+  Object.assign(dst,{status:src.status,name:src.name,type:src.type,startTime:src.startTime,dur:src.dur,mark:src.mark,markNote:src.markNote,drinkId:src.drinkId,drinkTemp:src.drinkTemp,drinkDone:src.drinkDone});
+  src.status='empty';src.name='';src.type='';src.startTime=null;src.dur=moveMode.kind==='room'?RD:SD;src.mark='';src.markNote='';src.drinkId=null;src.drinkTemp=null;src.drinkDone=false;
+  const dstLbl=kind==='room'?'R'+dst.num+' 룸':dst.num+'번 타석';
+  const name=dst.name;
+  moveMode=null;movePendingMode=null;
+  updateMoveBtnStyle();
+  clearAlertPanel();
+  renderBays();renderW();updateStats();
+  if(fcActive||fcActive1)runForecast();
+  showToast('↔️ '+esc(name)+'님 '+dstLbl+'으로 이동 완료','ok');
+}
+
+function cancelMoveMode(){
+  moveMode=null;movePendingMode=null;
+  updateMoveBtnStyle();
+  clearAlertPanel();
+  renderBays();
+}
 
 function doAssign(idx,kind){
   if(!assignMode)return;
@@ -1908,7 +2463,7 @@ function doAssign(idx,kind){
   waiting=waiting.filter(x=>x.id!==assignMode.wid);
   assignMode=null;
   clearAlertPanel();
-  renderBays();renderW();renderW2();updateStats();
+  renderBays();renderW();renderW2();renderBaySummary();updateStats();
   showToast('✅ '+esc(w.name)+'님 '+(kind==='room'?'R'+slot.num+' 룸':slot.num+'번 타석')+' 배정 완료','ok');
   if(lesHL)calcLesson();
   if(fcActive||fcActive1)runForecast();
@@ -1951,8 +2506,10 @@ function renderW(){
       '<div id="wu-'+w.id+'"></div>'+
       '<div class="wi-bot" style="justify-content:flex-end">'+
       '<div class="wbtns">'+
-      '<button class="btn-sm ok" onclick="assignW('+w.id+')">배정</button>'+
-      '<button class="btn-sm ng" onclick="removeW('+w.id+')">삭제</button>'+
+      (assignMode&&assignMode.wid===w.id
+        ? '<button class="btn-sm ng" onclick="cancelAssignMode()">배정 취소</button>'
+        : '<button class="btn-sm ok" onclick="assignW('+w.id+')">배정</button>')+
+      '<button class="btn-sm ng" onclick="removeW('+w.id+')" style="'+(assignMode&&assignMode.wid===w.id?'opacity:.3;pointer-events:none':'')+'">삭제</button>'+
       '</div></div></div>';
   }).join('');
   requestAnimationFrame(()=>{waiting.forEach(w=>updUrg(w.id));renderBays()});
@@ -1974,9 +2531,9 @@ function updUrg(id){
 }
 // ── 음료 데이터 ──
 const DRINKS=[
-  {id:'water',     name:'물', icon:'💧', temps:['냉장고','실온']},
+  {id:'water',     name:'생수', icon:'💧', temps:['냉장','실온']},
   {id:'americano', name:'아메리카노', icon:'☕', temps:['아이스','핫']},
-  {id:'icetea',    name:'아이스티\n(레몬)', icon:'🍋', temps:['아이스']},
+  {id:'icetea',    name:'레몬', icon:'🍋', temps:['아이스','핫']},
   {id:'earlgrey',  name:'얼그레이티', icon:'🫖', temps:['아이스','핫']},
 ];
 let drinkTarget=null; // {wid}
@@ -2390,6 +2947,7 @@ function assignFromForecast(wid, bayKey){
   if(!slot){alert('타석을 찾을 수 없습니다.');return;}
   if(slot.status!=='empty'){alert('이미 사용 중인 타석입니다.');return;}
   slot.status='occupied';slot.name=w.name;slot.type=w.type;slot.startTime=N();slot.dur=isRoom?RD:SD;slot.mark='';slot.markNote='';
+  slot.drinkId=w.drinkId||null;slot.drinkTemp=w.drinkTemp||null;slot.drinkDone=w.drinkDone||false;
   waiting=waiting.filter(x=>x.id!==wid);
   renderBays();renderW();renderW2();renderBaySummary();updateStats();
   if(fcActive||fcActive1)runForecast();
@@ -2422,20 +2980,18 @@ setInterval(()=>{waiting.forEach(w=>{updUrg(w.id);updUrg2(w.id);});},60000);
 // 1초마다: 시계 + 타석 잔여시간 텍스트만 업데이트 (DOM 재생성 없이)
 setInterval(()=>{
   clock();
-  // 타석 카드의 b-rem 요소만 갱신
+  // 타석 카드의 게이지바 요소만 갱신
   const allB=[...bays.map((b,i)=>({b,i,kind:'normal'})),...rooms.map((b,i)=>({b,i,kind:'room'}))];
   allB.forEach(({b,i,kind})=>{
     if(b.status==='empty'||!b.startTime)return;
     const s=remSec(b.startTime,b.dur);
     if(s===null)return;
-    // find the rem div inside the bay card
     const lbl=kind==='room'?'R'+b.num+' 룸':b.num+'번';
-    // 모든 .bay 요소를 순회해서 해당 num 카드 찾기
     document.querySelectorAll('.bay:not(.empty)').forEach(card=>{
-      const numEl=card.querySelector('.b-num');
-      if(!numEl||numEl.textContent.trim()!==lbl)return;
+      const capLbl=card.querySelector('.b-cap-lbl');
+      if(!capLbl||capLbl.textContent.trim()!==lbl)return;
       const r=rem(b.startTime,b.dur);
-      // 카드 색 urgency 업데이트
+      // urgency 업데이트
       if(s===0||r<=5){card.classList.add('urg-hi');card.classList.remove('urg-lo');}
       else if(r<=10){card.classList.add('urg-lo');card.classList.remove('urg-hi');}
       else{card.classList.remove('urg-hi','urg-lo');}
@@ -2445,12 +3001,12 @@ setInterval(()=>{
       const gaugeFill=gaugeWrap.querySelector('.b-gauge-fill');
       const gaugeLbl=gaugeWrap.querySelector('.b-gauge-lbl');
       const pct=b.dur>0?Math.max(0,Math.min(100,100-Math.round(r/b.dur*100))):0;
-      const gColor=r<=5?'#e06060':r<=10?'#e09030':'#5cb85c';
-      const gBg=r<=5?'#f7c0c0':r<=10?'#f5dfa0':'#aadda0';
+      const gColor=r<=5?'#e06060':r<=10?'#e09030':'#00b87f';
+      const gBg=r<=5?'#f7c0c0':r<=10?'#f5dfa0':'#b0f0da';
       if(gaugeFill){gaugeFill.style.width=pct+'%';gaugeFill.style.background=gColor;}
       if(gaugeWrap){gaugeWrap.style.background=gBg;}
       if(gaugeLbl){
-        const txt=s===0?'⚠ 시간 종료':remStr(b.startTime,b.dur)+' 남음';
+        const txt=s===0?'⚠ 시간 종료':remStr(b.startTime,b.dur);
         gaugeLbl.textContent=txt;
         gaugeLbl.style.color='#222';
         gaugeLbl.style.textShadow='none';
@@ -2491,51 +3047,97 @@ setInterval(()=>{
 </script>
 
 <script>
-/* ===== SIDEBAR ===== */
-function toggleSidebarCollapse(){
-  const sb=document.getElementById('sidebar');
-  const isCollapsed=sb.classList.toggle('collapsed');
-  document.body.classList.toggle('sidebar-collapsed',isCollapsed);
-  try{localStorage.setItem('sb_collapsed',isCollapsed?'1':'0');}catch(e){}
-}
-function toggleSidebar(){  // mobile
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('sidebar-overlay').classList.toggle('show');
-}
-function closeSidebar(){
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('sidebar-overlay').classList.remove('show');
-}
-// legacy stubs (called nowhere now but keep for safety)
-function collapseSidebar(){toggleSidebarCollapse();}
-function expandSidebar(){toggleSidebarCollapse();}
-
-// restore collapsed state
-(function(){
-  try{
-    if(localStorage.getItem('sb_collapsed')==='1'){
-      document.getElementById('sidebar').classList.add('collapsed');
-      document.body.classList.add('sidebar-collapsed');
-    }
-  }catch(e){}
-})();
-
+/* ===== TOPBAR ===== */
+let _prevPage = 'bay-page';
 function showPage(pageId){
+  _prevPage = document.querySelector('.topbar-item.active')?.id?.replace('tb-','') + '-page' || _prevPage;
   document.querySelectorAll('.page').forEach(p=>{p.style.display='none';p.classList.remove('active');});
   const pg=document.getElementById(pageId);
   pg.style.display= pageId==='lesson-page'?'flex':'block';
   pg.classList.add('active');
-  document.querySelectorAll('.sidebar-item').forEach(a=>a.classList.remove('active'));
-  const map={'bay-page':0,'lesson-page':1,'member-page':2};
-  document.querySelectorAll('.sidebar-item')[map[pageId]].classList.add('active');
+  document.querySelectorAll('.topbar-item').forEach(a=>a.classList.remove('active'));
+  const map={'home-page':'tb-home','bay-page':'tb-bay','lesson-page':'tb-lesson','member-page':'tb-member','ticket-page':'tb-ticket'};
+  if(map[pageId]) document.getElementById(map[pageId])?.classList.add('active');
   if(pageId==='lesson-page') lsRender();
   if(pageId==='member-page') mbRender();
-  if(window.innerWidth<=768) closeSidebar();
+  if(pageId==='home-page') homeRender();
+  if(pageId==='ticket-page') tkRender();
+  try{localStorage.setItem('tdf_currentPage', pageId);}catch(e){}
+}
+function tbGoBack(){
+  const active = document.querySelector('.topbar-item.active')?.id?.replace('tb-','') + '-page';
+  if(active === 'member-detail-page' || document.getElementById('member-detail-page').classList.contains('active')){
+    mbDetailClose(); return;
+  }
+  showPage(_prevPage !== active ? _prevPage : 'bay-page');
+}
+
+/* ===== HOME ===== */
+function homeRender(){
+  const now = new Date();
+  const mo=now.getMonth()+1, da=now.getDate();
+  const emptyBays = bays.filter(b=>b.status==='empty').length;
+  const waitCount = waiting.length;
+
+  // ── 이슈 자동 생성 ──
+  const issues = [];
+  const nowMs = Date.now();
+
+  // 대기 오래된 손님
+  waiting.forEach(w=>{
+    const mins = Math.floor((nowMs-(w.addedAt||nowMs))/60000);
+    if(mins>=20) issues.push({dot:'red', text:w.name+'님 대기 '+mins+'분 초과', time:mins+'분 전'});
+  });
+
+  // 타석 시간 초과 / 임박
+  const allSlots=[...bays,...rooms];
+  allSlots.forEach(b=>{
+    if(b.status==='active'&&b.startTime){
+      const elapsed=Math.floor((nowMs-b.startTime)/60000);
+      const remain=(b.dur||75)-elapsed;
+      const label=b.type==='룸레슨'?b.num+'번 룸':b.num+'번 타석';
+      if(remain<0) issues.push({dot:'red',text:label+' '+b.name+'님 시간 초과',time:Math.abs(remain)+'분 초과'});
+      else if(remain<=10) issues.push({dot:'yellow',text:label+' '+b.name+'님 잔여 '+remain+'분',time:remain+'분 남음'});
+    }
+  });
+
+  // 오늘 레슨 일정
+  const todayStr=now.getFullYear()+'-'+String(mo).padStart(2,'0')+'-'+String(da).padStart(2,'0');
+  const todayLessons=(typeof lsLessons!=='undefined')?lsLessons.filter(l=>l.date===todayStr):[];
+  if(todayLessons.length>0) issues.push({dot:'blue',text:'오늘 레슨 '+todayLessons.length+'건 예정',time:'오늘'});
+
+  // 빈 타석 + 대기 동시
+  if(waitCount>0&&emptyBays>0) issues.push({dot:'green',text:'빈 타석 '+emptyBays+'개 · 대기 '+waitCount+'명 안내 필요',time:'지금'});
+
+  const issueEl=document.getElementById('home-issues');
+  document.getElementById('home-issue-count').textContent=issues.length+'건';
+  issueEl.innerHTML = issues.length===0
+    ? '<div class="home-empty">✅ 현재 이슈가 없습니다</div>'
+    : issues.map(i=>`
+      <div class="home-issue-row">
+        <div class="home-issue-dot ${i.dot}"></div>
+        <div class="home-issue-text">${i.text}</div>
+        <div class="home-issue-time">${i.time}</div>
+      </div>`).join('');
+}
+
+function topbarMbSearch(val){
+  const si=document.getElementById('mb-search');
+  if(si){ si.value=val; mbRender(); }
+}
+function topbarMbSearchGo(){
+  const val=document.getElementById('topbar-mb-search').value;
+  const si=document.getElementById('mb-search');
+  if(si){ si.value=val; mbRender(); }
+  showPage('member-page');
+}
+function topbarSearchFocus(){
+  // 포커스만으로는 페이지 이동 안 함
 }
 
 /* ===== LESSON SCHEDULE ===== */
 const LS_COLORS=['#3b82f6','#ef4444','#22c55e','#f59e0b','#8b5cf6','#ec4899'];
-const LS_START_H=9, LS_END_H=22;
+const LS_START_H=9, LS_END_H=23;
 const SLOT_H=28; // px per 30-min slot
 
 let lsPros=[
@@ -2571,7 +3173,7 @@ function setView(v){
   lsRender();
 }
 
-/* ── Time slots 9:00–22:00 (30-min each) ── */
+/* ── Time slots 9:00–23:00 (30-min each) ── */
 function lsTimeSlots(){
   const s=[];
   for(let h=LS_START_H;h<LS_END_H;h++){
@@ -2589,7 +3191,7 @@ function timeToSlotIdx(hhmm){
 function lsRender(){
   const d=lsCurrentDate();
   const dayStr=DAY_KO[d.getDay()];
-  const todayMark=isToday(d)?'  ':'';
+  const todayMark=isToday(d)?'  ✦':'';
   const lbl=document.getElementById('ls-date-label');
   if(lbl) lbl.textContent=`${d.getMonth()+1}월 ${d.getDate()}일 (${dayStr})${todayMark}`;
 
@@ -2644,11 +3246,12 @@ function renderAllView(d){
     const b=document.createElement('div');
     b.className='ls-block';
     if(dur<=30){
-      b.style.cssText=`background:${col}1a;border-left-color:${col};height:${h}px;padding:2px 4px;display:flex;align-items:center;gap:3px`;
-      b.innerHTML=`<div class="ls-block-name" style="font-size:10px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(l.student)}</div><div style="font-size:9px;opacity:.6;flex-shrink:0;white-space:nowrap">${l.start}</div>`;
+      b.style.cssText=`background:${col}1a;border-left-color:${col};height:${h}px;padding:2px 4px;display:flex;align-items:center;gap:3px;position:relative;overflow:visible`;
+      b.innerHTML=`<div class="ls-block-type" style="background:${col}22;color:${col};flex-shrink:0">${dur}분</div><div class="ls-block-name" style="font-size:10px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(l.student)}</div><div style="font-size:9px;opacity:.6;flex-shrink:0;white-space:nowrap;margin-left:2px">${l.start}~${l.end}</div><div class="ls-block-tooltip"><strong>${esc(l.student)}</strong><br>${dur}분 · ${l.start}~${l.end}</div>`;
     } else {
       b.style.cssText=`background:${col}1a;border-left-color:${col};height:${h}px`;
-      b.innerHTML=`<div class="ls-block-type" style="background:${col}22;color:${col}">${dur}분</div><div class="ls-block-name">${esc(l.student)}</div><div class="ls-block-time">${l.start}~${l.end}</div>`;
+      b.style.cssText+=`;position:relative`;
+      b.innerHTML=`<div class="ls-block-type" style="background:${col}22;color:${col}">${dur}분</div><div class="ls-block-name">${esc(l.student)}</div><div class="ls-block-time">${l.start}~${l.end}</div><div class="ls-block-tooltip"><strong>${esc(l.student)}</strong><br>${dur}분 · ${l.start}~${l.end}</div>`;
     }
     b.onclick=e=>{e.stopPropagation();editLesson(l.id);};
     cell.appendChild(b);
@@ -2760,13 +3363,14 @@ function renderProView(d){
       cell.style.overflow='visible';
       const b=document.createElement('div');
       b.className='ls-block';
-      // 30분은 이름+시간만 한줄로, 50분은 타입배지도 표시
+      // 30분도 타입배지 + 이름 + 시간 표시, 좁으면 툴팁
       if(dur<=30){
-        b.style.cssText=`background:${col}1a;border-left-color:${col};height:${blockH}px;padding:2px 4px;display:flex;align-items:center;gap:3px`;
-        b.innerHTML=`<div class="ls-block-name" style="font-size:10px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(l.student)}</div><div style="font-size:9px;opacity:.6;flex-shrink:0;white-space:nowrap">${l.start}</div>`;
+        b.style.cssText=`background:${col}1a;border-left-color:${col};height:${blockH}px;padding:2px 4px;display:flex;align-items:center;gap:3px;position:relative;overflow:visible`;
+        b.innerHTML=`<div class="ls-block-type" style="background:${col}22;color:${col};flex-shrink:0">${dur}분</div><div class="ls-block-name" style="font-size:10px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(l.student)}</div><div style="font-size:9px;opacity:.6;flex-shrink:0;white-space:nowrap;margin-left:2px">${l.start}~${l.end}</div><div class="ls-block-tooltip"><strong>${esc(l.student)}</strong><br>${dur}분 · ${l.start}~${l.end}${l.bay?'<br>타석: '+l.bay:''}</div>`;
       } else {
         b.style.cssText=`background:${col}1a;border-left-color:${col};height:${blockH}px`;
-        b.innerHTML=`<div class="ls-block-type" style="background:${col}22;color:${col}">${dur}분</div><div class="ls-block-name">${esc(l.student)}</div><div class="ls-block-time">${l.start}~${l.end}${l.bay?' · '+l.bay:''}</div>`;
+        b.style.cssText+=`;position:relative`;
+        b.innerHTML=`<div class="ls-block-type" style="background:${col}22;color:${col}">${dur}분</div><div class="ls-block-name">${esc(l.student)}</div><div class="ls-block-time">${l.start}~${l.end}${l.bay?' · '+l.bay:''}</div><div class="ls-block-tooltip"><strong>${esc(l.student)}</strong><br>${dur}분 · ${l.start}~${l.end}${l.bay?'<br>타석: '+l.bay:''}</div>`;
       }
       b.onclick=e=>{e.stopPropagation();editLesson(l.id);};
       cell.appendChild(b);
@@ -3015,7 +3619,14 @@ function mbOpenModal(editId){
   document.getElementById('mb-modal-title').textContent = m ? '회원 수정' : '회원 등록';
   document.getElementById('mb-save-btn').textContent    = m ? '저장' : '등록';
   document.getElementById('mb-name').value   = m ? m.name   : '';
-  document.getElementById('mb-phone').value  = m ? (m.phone||'') : '010-';
+  const _ph = m ? (m.phone||'') : '';
+  const _pp = _ph.split('-');
+  const _p1el=document.getElementById('mb-phone-1');
+  const _p2el=document.getElementById('mb-phone-2');
+  const _p3el=document.getElementById('mb-phone-3');
+  if(_p1el) _p1el.value=_pp[0]||'010';
+  if(_p2el) _p2el.value=_pp[1]||'';
+  if(_p3el) _p3el.value=_pp[2]||'';
   document.getElementById('mb-num').value    = m ? (m.num||'')    : '';
   document.getElementById('mb-branch').value = m ? (m.branch||'동대구센터') : '동대구센터';
   const gender = m ? (m.gender||'남') : '남';
@@ -3037,23 +3648,31 @@ function mbCloseModal(){
 
 /* 전화번호 뒷자리 → 회원번호 자동입력 (중복시 끝에 0,1,2... 붙이기) */
 /* 전화번호 자동 하이픈 포맷 + 회원번호 자동입력 */
-function mbPhoneFormat(inp){
-  let v = inp.value.replace(/\D/g,'');
-  // 앞 3자리 기본 010 유지
-  if(v.length===0){ inp.value='010-'; return; }
-  let fmt='';
-  if(v.length<=3)       fmt=v;
-  else if(v.length<=7)  fmt=v.slice(0,3)+'-'+v.slice(3);
-  else                  fmt=v.slice(0,3)+'-'+v.slice(3,7)+'-'+v.slice(7,11);
-  inp.value=fmt;
+function mbPhonePart(inp, part){
+  inp.value = inp.value.replace(/\D/g,'');
+  // 자동 포커스 이동
+  if(part===1 && inp.value.length===3){
+    document.getElementById('mb-phone-2').focus();
+  } else if(part===2 && inp.value.length===4){
+    document.getElementById('mb-phone-3').focus();
+  }
   mbAutoNum();
 }
 
+function mbGetPhone(){
+  const p1=(document.getElementById('mb-phone-1')||{}).value||'010';
+  const p2=(document.getElementById('mb-phone-2')||{}).value||'';
+  const p3=(document.getElementById('mb-phone-3')||{}).value||'';
+  if(!p2&&!p3) return '';
+  return p1+'-'+p2+'-'+p3;
+}
+
 function mbAutoNum(){
-  const raw = document.getElementById('mb-phone').value.replace(/\D/g,'');
+  const p3=(document.getElementById('mb-phone-3')||{}).value||'';
   const numInp = document.getElementById('mb-num');
-  if(raw.length < 4) return;
-  const tail = raw.slice(-4);
+  if(!numInp) return;
+  const tail = p3.replace(/\D/g,'').slice(-4);
+  if(tail.length < 4) return;
   const used = members.filter(m=>mbEditId===null||m.id!==mbEditId).map(m=>(m.num||'').trim());
   let candidate = tail;
   if(used.includes(candidate)){
@@ -3074,8 +3693,8 @@ function mbSave(){
   const name   = document.getElementById('mb-name').value.trim();
   if(!name){ alert('이름을 입력해주세요.'); return; }
   const gender = document.getElementById('mb-gender').value;
-  const phone  = document.getElementById('mb-phone').value.trim();
-  if(!phone || phone==='010-'){ alert('연락처를 입력해주세요.'); return; }
+  const phone  = mbGetPhone();
+  if(!phone || phone==='010--'){ alert('연락처를 입력해주세요.'); return; }
   const num    = document.getElementById('mb-num').value.trim();
   if(!num){ alert('회원번호를 입력해주세요.'); return; }
   const branch = document.getElementById('mb-branch').value.trim();
@@ -3105,10 +3724,23 @@ function mbDetailOpen(id){
   if(!m) return;
   mbDetailId = id;
   const isFemale = m.gender==='여';
-  // 아바타
+  // 아바타 — 성별 실루엣 SVG
   const av = document.getElementById('mbd-avatar');
-  av.textContent = m.name.charAt(0);
   av.className = 'mbd-avatar ' + (isFemale ? 'female' : 'male');
+  if(isFemale){
+    av.innerHTML=`<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" width="38" height="38">
+      <ellipse cx="32" cy="18" rx="11" ry="12" fill="#be185d" opacity=".7"/>
+      <path d="M14 54c0-10.5 8-17 18-17s18 6.5 18 17" fill="#be185d" opacity=".7"/>
+      <path d="M22 37c0 0-2 4-2 8h24c0-4-2-8-2-8" fill="#be185d" opacity=".55"/>
+      <path d="M26 37 Q32 43 38 37" fill="#be185d" opacity=".4"/>
+    </svg>`;
+  } else {
+    av.innerHTML=`<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" width="38" height="38">
+      <ellipse cx="32" cy="18" rx="11" ry="12" fill="#1d4ed8" opacity=".7"/>
+      <path d="M14 54c0-10.5 8-17 18-17s18 6.5 18 17" fill="#1d4ed8" opacity=".7"/>
+      <rect x="24" y="36" width="16" height="10" rx="2" fill="#1d4ed8" opacity=".5"/>
+    </svg>`;
+  }
   // 이름 + 성별 뱃지
   document.getElementById('mbd-name').textContent = m.name;
   const badge = document.getElementById('mbd-gender-badge');
@@ -3138,40 +3770,164 @@ function mbDetailClose(){
   mbDetailId = null;
 }
 
-function mbDetailEdit(){
-  if(mbDetailId===null) return;
-  mbDetailClose();
-  mbOpenModal(mbDetailId);
+function mbdStartEdit(){
+  const m=members.find(x=>x.id===mbDetailId); if(!m) return;
+  document.getElementById('mbd-edit-name').value  = m.name;
+  const _ep=( m.phone||'').split('-');
+  const _e1=document.getElementById('mbd-edit-phone-1');
+  const _e2=document.getElementById('mbd-edit-phone-2');
+  const _e3=document.getElementById('mbd-edit-phone-3');
+  if(_e1) _e1.value=_ep[0]||'010';
+  if(_e2) _e2.value=_ep[1]||'';
+  if(_e3) _e3.value=_ep[2]||'';
+  document.getElementById('mbd-edit-num').value   = m.num||'';
+  document.getElementById('mbd-edit-gender').value= m.gender||'남';
+  document.querySelectorAll('.mbd-eg-btn').forEach(b=>{
+    b.classList.toggle('m', b.dataset.val===(m.gender||'남'));
+    b.classList.toggle('selected', b.dataset.val===(m.gender||'남'));
+  });
+  document.getElementById('mbd-view-mode').style.display='none';
+  document.getElementById('mbd-edit-mode').style.display='block';
 }
+function mbdCancelEdit(){
+  document.getElementById('mbd-edit-mode').style.display='none';
+  document.getElementById('mbd-view-mode').style.display='block';
+}
+function mbdEditGender(btn){
+  document.querySelectorAll('.mbd-eg-btn').forEach(b=>{b.classList.remove('m','selected');});
+  btn.classList.add('m','selected');
+  document.getElementById('mbd-edit-gender').value=btn.dataset.val;
+}
+function mbdPhonePart(inp, part){
+  inp.value=inp.value.replace(/\D/g,'');
+  if(part===1&&inp.value.length===3) document.getElementById('mbd-edit-phone-2').focus();
+  else if(part===2&&inp.value.length===4) document.getElementById('mbd-edit-phone-3').focus();
+}
+function mbdGetPhone(){
+  const p1=(document.getElementById('mbd-edit-phone-1')||{}).value||'010';
+  const p2=(document.getElementById('mbd-edit-phone-2')||{}).value||'';
+  const p3=(document.getElementById('mbd-edit-phone-3')||{}).value||'';
+  if(!p2&&!p3) return '';
+  return p1+'-'+p2+'-'+p3;
+}
+function mbdSaveEdit(){
+  if(mbDetailId===null||mbDetailId===undefined){alert('수정할 회원을 찾을 수 없습니다.');return;}
+  const name =document.getElementById('mbd-edit-name').value.trim();
+  if(!name){alert('이름을 입력해주세요.');return;}
+  const phone=mbdGetPhone();
+  if(!phone||phone==='010--'){alert('연락처를 입력해주세요.');return;}
+  const num  =document.getElementById('mbd-edit-num').value.trim();
+  if(!num){alert('회원번호를 입력해주세요.');return;}
+  const gender=document.getElementById('mbd-edit-gender').value;
+  const m=members.find(x=>x.id===mbDetailId);
+  if(!m){alert('회원 데이터를 찾을 수 없습니다.');return;}
+  Object.assign(m,{name,phone,num,gender});
+  saveState();
+  mbdCancelEdit();
+  mbDetailOpen(mbDetailId);
+}
+function mbDetailEdit(){ mbdStartEdit(); }  // legacy compat
 
 function mbDetailDelete(){
   if(mbDetailId===null) return;
   const m = members.find(x=>x.id===mbDetailId);
   if(!m) return;
-  if(!confirm(m.name+'님을 삭제할까요?')) return;
-  members = members.filter(x=>x.id!==mbDetailId);
+  mst={_mbDel:mbDetailId};
+  document.getElementById('m-ttl').textContent='회원 삭제';
+  document.getElementById('m-body').innerHTML=
+    '<p style="font-size:13px;color:#444;margin-bottom:16px;line-height:1.6"><strong>'+esc(m.name)+'</strong>님을 삭제할까요?<br><span style="font-size:12px;color:#999">삭제 후 복구할 수 없습니다.</span></p>'+
+    '<div class="mbtns">'+
+    '<button class="m-cx" onclick="closeM()">취소</button>'+
+    '<button class="m-ok" style="background:#c03030" onclick="_confirmMbDel()">삭제</button>'+
+    '</div>';
+  openM();
+}
+function _confirmMbDel(){
+  if(!mst||!mst._mbDel) return;
+  const id=mst._mbDel;
+  members=members.filter(x=>x.id!==id);
   saveState();
+  closeM();
   mbDetailClose();
 }
 
 function mbDelete(id){
   const m=members.find(x=>x.id===id); if(!m)return;
-  if(!confirm(m.name+'님을 삭제할까요?'))return;
+  mst={_mbDel2:id};
+  document.getElementById('m-ttl').textContent='회원 삭제';
+  document.getElementById('m-body').innerHTML=
+    '<p style="font-size:13px;color:#444;margin-bottom:16px;line-height:1.6"><strong>'+esc(m.name)+'</strong>님을 삭제할까요?<br><span style="font-size:12px;color:#999">삭제 후 복구할 수 없습니다.</span></p>'+
+    '<div class="mbtns">'+
+    '<button class="m-cx" onclick="closeM()">취소</button>'+
+    '<button class="m-ok" style="background:#c03030" onclick="_confirmMbDel2()">삭제</button>'+
+    '</div>';
+  openM();
+}
+function _confirmMbDel2(){
+  if(!mst||!mst._mbDel2) return;
+  const id=mst._mbDel2;
   members=members.filter(x=>x.id!==id);
   saveState();
+  closeM();
   mbRender();
 }
 
+function mbToggleDetail(){
+  const panel=document.getElementById('mb-detail-panel');
+  const arrow=document.getElementById('mb-detail-arrow');
+  const open=panel.style.display==='none';
+  panel.style.display=open?'block':'none';
+  if(arrow) arrow.textContent=open?'▲':'▼';
+}
+function mbResetFilter(){
+  const s=document.getElementById('mb-search'); if(s) s.value='';
+  const grs=document.querySelectorAll('input[name="mb-gender-r"]');
+  grs.forEach(r=>{r.checked=r.value===''});
+  const so=document.getElementById('mb-sort'); if(so) so.value='newest';
+  const br=document.getElementById('mb-filter-branch'); if(br) br.value='';
+  const df=document.getElementById('mb-filter-date-from'); if(df) df.value='';
+  const dt=document.getElementById('mb-filter-date-to'); if(dt) dt.value='';
+  mbRender();
+}
 function mbRender(){
   const q=(document.getElementById('mb-search')||{}).value||'';
-  const filtered=members.filter(m=>{
-    return !q||m.name.includes(q)||(m.phone||'').includes(q)||(m.num||'').includes(q);
+  const grEl=document.querySelector('input[name="mb-gender-r"]:checked');
+  const gf=grEl?grEl.value:'';
+  const sort=(document.getElementById('mb-sort')||{}).value||'newest';
+  const branch=(document.getElementById('mb-filter-branch')||{}).value||'';
+  const dateFrom=(document.getElementById('mb-filter-date-from')||{}).value||'';
+  const dateTo=(document.getElementById('mb-filter-date-to')||{}).value||'';
+
+  let filtered=members.filter(m=>{
+    const matchQ=!q||m.name.includes(q)||(m.phone||'').includes(q)||(m.num||'').includes(q);
+    const matchG=!gf||(m.gender||'')===gf;
+    const matchB=!branch||(m.branch||'').includes(branch);
+    let matchD=true;
+    if(dateFrom||dateTo){
+      const addedDate=m.addedAt?new Date(m.addedAt).toISOString().slice(0,10):'';
+      if(dateFrom&&addedDate<dateFrom) matchD=false;
+      if(dateTo&&addedDate>dateTo) matchD=false;
+    }
+    return matchQ&&matchG&&matchB&&matchD;
   });
 
-  document.getElementById('mb-total').textContent = members.length;
+  // 정렬
+  filtered=[...filtered];
+  if(sort==='newest') filtered.sort((a,b)=>(b.addedAt||0)-(a.addedAt||0));
+  else if(sort==='oldest') filtered.sort((a,b)=>(a.addedAt||0)-(b.addedAt||0));
+  else if(sort==='name') filtered.sort((a,b)=>a.name.localeCompare(b.name,'ko'));
+  else if(sort==='num') filtered.sort((a,b)=>(a.num||'').localeCompare(b.num||'','ko',{numeric:true}));
 
-  const tbody = document.getElementById('mb-tbody');
-  const empty = document.getElementById('mb-empty');
+  const totalEl=document.getElementById('mb-total');
+  const isFiltered=q||gf||branch||dateFrom||dateTo;
+  if(totalEl) totalEl.textContent=isFiltered
+    ? filtered.length+' / '+members.length
+    : members.length;
+  const badge=document.getElementById('mb-filter-badge');
+  if(badge) badge.style.display=isFiltered?'':'none';
+
+  const tbody=document.getElementById('mb-tbody');
+  const empty=document.getElementById('mb-empty');
 
   if(!filtered.length){
     tbody.innerHTML='';
@@ -3188,9 +3944,6 @@ function mbRender(){
       <td style="padding:9px 14px;color:#555;font-size:12px">${esc(m.phone||'—')}</td>
       <td style="padding:9px 14px;color:#666;font-size:12px">${esc(m.num||'—')}</td>
       <td style="padding:9px 14px;color:#888;font-size:12px">${esc(m.branch||'동대구센터')}</td>
-      <td style="padding:9px 14px;text-align:center;white-space:nowrap" onclick="event.stopPropagation()">
-        <button onclick="mbDelete(${m.id})" style="font-size:10px;padding:3px 8px;border-radius:4px;border:1px solid #e09090;color:#c03030;background:#fff;cursor:pointer;font-family:inherit;font-weight:700">삭제</button>
-      </td>
     </tr>`).join('');
 }
 
@@ -3216,8 +3969,253 @@ function initLessonsAndMembers(){
     }
   }catch(e){}
 }
-initLessonsAndMembers();
+/* ══════════════════════════════════════════
+   이용권 관리
+══════════════════════════════════════════ */
+let tickets = [];
+let tkNextId = 1;
+let tkEditId = null;
+let tkSelectedId = null;
+
+function tkSave(){
+  try{ localStorage.setItem('tdf_tickets', JSON.stringify({tickets:tickets, tkNextId:tkNextId})); }catch(e){}
+}
+function tkLoad(){
+  try{
+    var d = JSON.parse(localStorage.getItem('tdf_tickets')||'{}');
+    if(d.tickets) tickets = d.tickets.map(function(t){ return Object.assign({}, t, {id:+t.id}); });
+    if(d.tkNextId) tkNextId = +d.tkNextId;
+  }catch(e){}
+}
+tkLoad();
+
+const TK_CAT_META = {
+  '연습장-횟수': {label:'연습장 횟수권', group:'연습장', cls:'tk-cat-count', sub:'횟수제'},
+  '연습장-기간': {label:'연습장 기간권', group:'연습장', cls:'tk-cat-range', sub:'기간제'},
+  '레슨-30분':   {label:'레슨 30분',     group:'레슨',   cls:'tk-cat-les30', sub:'30분'},
+  '레슨-50분':   {label:'레슨 50분',     group:'레슨',   cls:'tk-cat-les50', sub:'50분'},
+};
+
+function tkRender(){
+  var q = '';
+  var searchEl = document.getElementById('tk-search');
+  if(searchEl) q = searchEl.value.toLowerCase();
+  var sidebar = document.getElementById('tk-sidebar-list');
+  if(!sidebar) return;
+
+  var groupOrder = ['연습장','레슨'];
+  var groupMeta = {
+    '연습장': {title:'연습장 이용권', cls:'g-practice'},
+    '레슨':   {title:'레슨 이용권',   cls:'g-lesson'},
+  };
+
+  var html = '';
+  groupOrder.forEach(function(grp){
+    var list = tickets.filter(function(t){
+      return t.cat.indexOf(grp) === 0 && (!q || t.name.toLowerCase().indexOf(q) >= 0);
+    });
+    if(!list.length) return;
+    var gm = groupMeta[grp];
+    html += '<div class="tk-sidebar-group">';
+    html += '<div class="tk-sidebar-group-title ' + gm.cls + '"><span>' + gm.title + '</span></div>';
+    list.forEach(function(t){
+      var meta = TK_CAT_META[t.cat] || {sub:t.cat};
+      var active = (+t.id === +tkSelectedId) ? ' active' : '';
+      html += '<button class="tk-sidebar-item' + active + '" onclick="tkSelectItem(' + t.id + ')">[' + meta.sub + '] ' + esc(t.name) + '</button>';
+    });
+    html += '</div>';
+  });
+  sidebar.innerHTML = html || '<div style="padding:20px;text-align:center;color:#ccc;font-size:13px">이용권이 없습니다</div>';
+
+  if(tkSelectedId && tickets.find(function(x){ return +x.id === +tkSelectedId; })){
+    tkShowDetail(tkSelectedId);
+  } else if(tkSelectedId){
+    tkSelectedId = null;
+    var de = document.getElementById('tk-detail-empty');
+    var dc = document.getElementById('tk-detail-content');
+    if(de) de.style.display = 'flex';
+    if(dc) dc.style.display = 'none';
+  }
+}
+
+function tkSelectItem(id){
+  tkSelectedId = +id;
+  document.querySelectorAll('.tk-sidebar-item').forEach(function(b){
+    b.classList.toggle('active', b.textContent && b.onclick && ('' + b.onclick).indexOf('('+id+')') >= 0);
+  });
+  tkShowDetail(tkSelectedId);
+}
+
+function tkShowDetail(id){
+  var t = tickets.find(function(x){ return +x.id === +id; });
+  if(!t) return;
+  var meta = TK_CAT_META[t.cat] || {label:t.cat, sub:t.cat};
+  var de = document.getElementById('tk-detail-empty');
+  var dc = document.getElementById('tk-detail-content');
+  var dtitle = document.getElementById('tk-detail-title');
+  var dsub = document.getElementById('tk-detail-sub');
+  var drows = document.getElementById('tk-detail-rows');
+  if(!de||!dc||!dtitle||!dsub||!drows) return;
+  de.style.display = 'none';
+  dc.style.display = 'block';
+  dtitle.textContent = '[' + meta.sub + '] ' + t.name;
+  var subParts = [];
+  if(t.count) subParts.push(t.count + '회');
+  if(t.days) subParts.push(t.days + '일');
+  if(t.validDays) subParts.push('유효 ' + t.validDays + '일');
+  dsub.textContent = (t.cat.indexOf('연습장') === 0 ? '연습장' : '레슨') + ' / ' + meta.sub + (subParts.length ? ' / ' + subParts.join(' · ') : '');
+  var fmtPrice = function(p){ return p ? Number(p).toLocaleString() + '원' : '—'; };
+  var metaStr = '';
+  if(t.cat === '연습장-횟수') metaStr = (t.count||'—') + '회 / ' + (t.validDays ? t.validDays + '일' : '기간무제한');
+  else if(t.cat === '연습장-기간') metaStr = (t.days||'—') + '일 이용';
+  else metaStr = meta.sub + ' / ' + (t.count||'—') + '회 / ' + (t.validDays ? t.validDays + '일' : '기간무제한');
+  drows.innerHTML =
+    '<div class="tk-detail-row">' +
+      '<div class="tk-detail-row-left">' +
+        '<div class="tk-detail-row-name">' + esc(t.name) + '</div>' +
+        '<div class="tk-detail-row-meta">' + metaStr + (t.note ? ' · ' + esc(t.note) : '') + '</div>' +
+      '</div>' +
+      '<div class="tk-detail-row-right">' +
+        '<div class="tk-detail-price">' + fmtPrice(t.price) + '</div>' +
+        '<span class="tk-detail-badge">판매중</span>' +
+        '<button class="tk-btn-edit" onclick="tkOpenModal(' + t.id + ')">수정 &gt;</button>' +
+        '<button class="tk-btn-del" onclick="tkDelete(' + t.id + ')">삭제</button>' +
+      '</div>' +
+    '</div>';
+}
+
+
+function tkOpenModal(id){
+  tkEditId = id ? +id : null;
+  var t = tkEditId ? tickets.find(function(x){ return +x.id===tkEditId; }) : null;
+  document.getElementById('tk-ttl').textContent = t ? '이용권 수정' : '이용권 등록';
+
+  var cats = [
+    {v:'연습장-횟수', lbl:'연습장 횟수권'},
+    {v:'연습장-기간', lbl:'연습장 기간권'},
+    {v:'레슨-30분',   lbl:'레슨 30분'},
+    {v:'레슨-50분',   lbl:'레슨 50분'},
+  ];
+  var curCat = t ? t.cat : '연습장-횟수';
+
+  var catBtns = '';
+  cats.forEach(function(c){
+    var sel = c.v === curCat ? ' selected' : '';
+    catBtns += '<button type="button" class="tk-type-opt' + sel + '" onclick="tkSelCat(this,\'' + c.v + '\')">'
+             + '<span class="tko-lbl">' + c.lbl + '</span></button>';
+  });
+
+  var nameVal  = t ? esc(t.name)  : '';
+  var priceVal = t && t.price ? t.price : '';
+  var noteVal  = t && t.note  ? esc(t.note) : '';
+
+  document.getElementById('tk-body').innerHTML =
+    '<div class="mr"><label>이용권 이름 *</label>'
+    + '<input id="tk-name" type="text" placeholder="예: [시설] 쿠폰권" value="' + nameVal + '"/></div>'
+    + '<div class="mr"><label>종류 *</label>'
+    + '<div class="tk-type-grid">' + catBtns + '</div>'
+    + '<input type="hidden" id="tk-cat" value="' + curCat + '"/></div>'
+    + '<div id="tk-fields"></div>'
+    + '<div class="mr"><label>가격 (원)</label>'
+    + '<input id="tk-price" type="number" min="0" placeholder="예: 200000" value="' + priceVal + '"/></div>'
+    + '<div class="mr"><label>메모 (선택)</label>'
+    + '<input id="tk-note" type="text" placeholder="특이사항 등" value="' + noteVal + '"/></div>'
+    + '<div class="mbtns">'
+    + '<button class="m-cx" onclick="tkCloseModal()">취소</button>'
+    + '<button class="m-ok" onclick="tkConfirm()">저장</button>'
+    + '</div>';
+
+  tkRenderFields(curCat, t);
+  document.getElementById('tk-ov').style.display = 'flex';
+  var nameEl = document.getElementById('tk-name');
+  if(nameEl) nameEl.focus();
+}
+
+function tkSelCat(btn, val){
+  document.querySelectorAll('#tk-body .tk-type-opt').forEach(b=>{
+    b.classList.remove('selected');
+    b.querySelector('.tko-lbl').style.color='#555';
+  });
+  btn.classList.add('selected');
+  btn.querySelector('.tko-lbl').style.color='#1a4a80';
+  document.getElementById('tk-cat').value = val;
+  const t = tkEditId ? tickets.find(x=>x.id===tkEditId) : null;
+  tkRenderFields(val, t);
+}
+
+function tkRenderFields(cat, t){
+  var f = document.getElementById('tk-fields');
+  if(!f) return;
+  var countVal    = t && t.count    ? t.count    : '';
+  var validDays   = t && t.validDays? t.validDays: '';
+  var daysVal     = t && t.days     ? t.days     : '';
+  if(cat === '연습장-횟수'){
+    f.innerHTML =
+      '<div class="mr"><label>횟수 *</label>'
+      + '<input id="tk-count" type="number" min="1" placeholder="예: 10" value="' + countVal + '"/></div>'
+      + '<div class="mr"><label>유효기간 (일)</label>'
+      + '<input id="tk-validDays" type="number" min="1" placeholder="예: 90" value="' + validDays + '"/></div>';
+  } else if(cat === '연습장-기간'){
+    f.innerHTML =
+      '<div class="mr"><label>이용기간 (일) *</label>'
+      + '<input id="tk-days" type="number" min="1" placeholder="예: 30" value="' + daysVal + '"/></div>';
+  } else if(cat === '레슨-30분' || cat === '레슨-50분'){
+    f.innerHTML =
+      '<div class="mr"><label>횟수 *</label>'
+      + '<input id="tk-count" type="number" min="1" placeholder="예: 10" value="' + countVal + '"/></div>'
+      + '<div class="mr"><label>유효기간 (일)</label>'
+      + '<input id="tk-validDays" type="number" min="1" placeholder="예: 90" value="' + validDays + '"/></div>';
+  }
+}
+
+function tkConfirm(){
+  const name = (document.getElementById('tk-name').value||'').trim();
+  const cat  = document.getElementById('tk-cat').value;
+  const price= document.getElementById('tk-price').value||'';
+  const note = (document.getElementById('tk-note').value||'').trim();
+  if(!name){alert('이용권 이름을 입력해주세요.');return;}
+  const count     = (document.getElementById('tk-count')||{}).value||'';
+  const validDays = (document.getElementById('tk-validDays')||{}).value||'';
+  const days      = (document.getElementById('tk-days')||{}).value||'';
+  if((cat==='연습장-횟수'||cat==='레슨-30분'||cat==='레슨-50분')&&!count){
+    alert('횟수를 입력해주세요.');return;
+  }
+  if(cat==='연습장-기간'&&!days){alert('이용기간을 입력해주세요.');return;}
+  const obj = {name, cat, price, note, count:count?+count:'', validDays:validDays?+validDays:'', days:days?+days:''};
+  if(tkEditId){
+    const idx = tickets.findIndex(x=>x.id===tkEditId);
+    if(idx>=0) tickets[idx]={...tickets[idx],...obj};
+  } else {
+    tickets.push({id:tkNextId++, ...obj});
+  }
+  tkSave(); tkCloseModal(); tkRender();
+}
+
+function tkDelete(id){
+  id = +id;
+  const t = tickets.find(x=>+x.id===id); if(!t) return;
+  if(!confirm('「'+t.name+'」 이용권을 삭제하시겠습니까?')) return;
+  tickets = tickets.filter(x=>+x.id!==id);
+  tkSave(); tkRender();
+}
+
+function tkCloseModal(){
+  document.getElementById('tk-ov').style.display='none';
+  tkEditId=null;
+}
+document.getElementById('tk-ov').addEventListener('click',function(e){if(e.target===this)tkCloseModal();});
+
+
 mbRender();
+homeRender();
+// 새로고침 시 마지막 페이지 복원
+try{
+  const savedPage=localStorage.getItem('tdf_currentPage');
+  const validPages=['bay-page','lesson-page','member-page','home-page','ticket-page'];
+  if(savedPage && validPages.includes(savedPage) && savedPage!=='home-page'){
+    showPage(savedPage);
+  }
+}catch(e){}
 </script>
 </body>
 </html>
