@@ -12,7 +12,6 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>타석 관리</title>
-  //수파베이스 연결
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
 <script>
@@ -25,6 +24,22 @@ const supabase = window.supabase.createClient(
   supabaseKey
 );
 
+    async function testSave() {
+
+  const { data, error } = await supabase
+    .from('members')
+    .insert([
+      {
+        name: '테스트',
+        phone: '010-1234-5678'
+      }
+    ]);
+
+  console.log(data);
+  console.log(error);
+
+  alert('저장 시도 완료');
+}
 </script>
  <button onclick="testSave()">
 테스트 저장
@@ -1571,22 +1586,6 @@ body{margin-left:0;margin-top:var(--tb-h);transition:none}
 </div>
 
 <script>
-  async function testSave() {
-
-  const { data, error } = await supabase
-    .from('members')
-    .insert([
-      {
-        name: '테스트',
-        phone: '010-1234-5678'
-      }
-    ]);
-
-  console.log(data);
-  console.log(error);
-
-  alert('저장 시도 완료');
-}
 const SD=75,RD=75;
 let bays=[],rooms=[],waiting=[],nid=1,mst=null,lesHL=null,durSt=null,durTmp=75;
 
