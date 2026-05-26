@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌙 야식 추천 게임</title>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Nanum Gothic', sans-serif; background: #0a0a14; color: #f0eaff; min-height: 100vh; overflow-x: hidden; }
+
+.stars { position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background: radial-gradient(ellipse at 20% 30%, rgba(80,40,120,0.15) 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 70%, rgba(20,60,100,0.15) 0%, transparent 60%); }
+.stars::before { content: ''; position: absolute; inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 10% 15%,rgba(255,255,255,.6) 0%,transparent 100%),
+    radial-gradient(1px 1px at 30% 45%,rgba(255,255,255,.4) 0%,transparent 100%),
+    radial-gradient(1px 1px at 55% 20%,rgba(255,255,255,.7) 0%,transparent 100%),
+    radial-gradient(1px 1px at 75% 60%,rgba(255,255,255,.3) 0%,transparent 100%),
+    radial-gradient(1px 1px at 90% 10%,rgba(255,255,255,.5) 0%,transparent 100%),
+    radial-gradient(1px 1px at 45% 80%,rgba(255,255,255,.4) 0%,transparent 100%),
+    radial-gradient(1px 1px at 15% 70%,rgba(255,255,255,.6) 0%,transparent 100%),
+    radial-gradient(1px 1px at 65% 40%,rgba(255,255,255,.3) 0%,transparent 100%),
+    radial-gradient(1px 1px at 85% 85%,rgba(255,255,255,.5) 0%,transparent 100%),
+    radial-gradient(1px 1px at 40%  5%,rgba(255,255,255,.6) 0%,transparent 100%),
+    radial-gradient(1px 1px at 95% 40%,rgba(255,255,255,.4) 0%,transparent 100%); }
+
+/* NAV */
+.nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; justify-content: center; padding: 1rem 1.5rem;
+  background: linear-gradient(to bottom, rgba(10,10,20,.92), transparent);
+  backdrop-filter: blur(6px); }
+.nav-inner { display: flex; gap: 4px; background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.1); border-radius: 40px; padding: 5px; }
+.nav-btn { background: transparent; border: none; border-radius: 30px;
+  padding: 7px 16px; color: rgba(240,234,255,.5); font-family: 'Nanum Gothic', sans-serif;
+  font-size: .83rem; font-weight: 700; cursor: pointer; transition: all .2s; white-space: nowrap; }
+.nav-btn.active { background: rgba(255,157,226,.18); color: #ff9de2; }
+.nav-btn:hover:not(.active) { color: rgba(240,234,255,.85); }
+
+/* PAGES */
+.page { display: none; position: relative; z-index: 1; }
+.page.active { display: block; }
+
+/* GAME */
+.container { max-width: 560px; margin: 0 auto; padding: 5.5rem 1.5rem 2rem;
+  min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+h1 { font-family: 'Black Han Sans', sans-serif; font-size: 2.4rem; text-align: center;
+  margin-bottom: .3rem; background: linear-gradient(135deg,#ff9de2,#ffce85,#85e0ff);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.subtitle { text-align: center; font-size: .9rem; color: rgba(240,234,255,.5); margin-bottom: 2.5rem; }
+.card { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 20px; padding: 2rem; width: 100%; backdrop-filter: blur(10px); }
+
+/* QUIZ */
+.progress-bar { display: flex; gap: 6px; margin-bottom: 1.5rem; justify-content: center; }
+.progress-dot { width: 28px; height: 6px; border-radius: 3px; background: rgba(255,255,255,.12); transition: background .3s; }
+.progress-dot.done { background: #ff9de2; }
+.progress-dot.active { background: rgba(255,157,226,.5); animation: pulse-dot 1s ease-in-out infinite; }
+@keyframes pulse-dot { 0%,100%{opacity:.5} 50%{opacity:1} }
+.question-area { text-align: center; margin-bottom: 1.8rem; }
+.q-label { font-size: .75rem; color: rgba(240,234,255,.4); letter-spacing: .1em; margin-bottom: .5rem; }
+.q-text { font-family: 'Black Han Sans', sans-serif; font-size: 1.35rem; line-height: 1.4; color: #f0eaff; }
+.q-emoji { font-size: 2.5rem; margin-bottom: .6rem; display: block; }
+.options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.opt-btn { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12);
+  border-radius: 14px; padding: 1rem .8rem; color: #f0eaff;
+  font-family: 'Nanum Gothic', sans-serif; font-size: .95rem; font-weight: 700;
+  cursor: pointer; transition: all .18s; text-align: center; line-height: 1.3; }
+.opt-btn:hover { background: rgba(255,157,226,.15); border-color: rgba(255,157,226,.4); transform: translateY(-2px); }
+.opt-btn:active { transform: scale(.97); }
+.opt-btn .opt-emoji { display: block; font-size: 1.5rem; margin-bottom: 4px; }
+
+/* RESULT */
+.result-area { display: none; text-align: center; animation: fadeIn .5s ease; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+.result-emoji { font-size: 5rem; margin-bottom: .5rem; display: block; animation: bounce .6s ease; }
+@keyframes bounce { 0%{transform:scale(0)} 60%{transform:scale(1.2)} 100%{transform:scale(1)} }
+.result-name { font-family: 'Black Han Sans', sans-serif; font-size: 2rem;
+  background: linear-gradient(135deg,#ff9de2,#ffce85);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: .4rem; }
+.result-desc { font-size: .9rem; color: rgba(240,234,255,.65); line-height: 1.6; margin-bottom: 1.2rem; }
+.result-tags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 1.2rem; }
+.tag { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.15);
+  border-radius: 20px; padding: 4px 12px; font-size: .78rem; color: rgba(240,234,255,.7); }
+.result-runner-up { margin-bottom: 1.2rem; }
+.runner-label { font-size: .75rem; color: rgba(240,234,255,.35); margin-bottom: 8px; }
+.runner-items { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.runner-item { background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 12px; padding: 6px 12px; font-size: .82rem; color: rgba(240,234,255,.55); }
+
+/* EAT BUTTON */
+.eat-btn { width: 100%; background: linear-gradient(135deg,#ff9de2,#ffce85); border: none;
+  border-radius: 16px; padding: 1.1rem 2rem; font-family: 'Black Han Sans', sans-serif;
+  font-size: 1.2rem; color: #1a0a2e; cursor: pointer; transition: all .2s; margin-bottom: 10px;
+  letter-spacing: .02em; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.eat-btn:hover { transform: translateY(-2px) scale(1.02); filter: brightness(1.06); }
+.eat-btn:active { transform: scale(.98); }
+.eat-btn.eaten { background: linear-gradient(135deg,#7be8a0,#5bcfdc); animation: eatPop .4s ease; }
+@keyframes eatPop { 0%{transform:scale(1)} 40%{transform:scale(1.08)} 100%{transform:scale(1)} }
+
+.restart-btn { width: 100%; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12);
+  border-radius: 14px; padding: .85rem 2rem; font-family: 'Black Han Sans', sans-serif;
+  font-size: 1rem; color: rgba(240,234,255,.6); cursor: pointer; transition: all .2s; }
+.restart-btn:hover { background: rgba(255,255,255,.1); color: #f0eaff; }
+.tip-text { margin-top: 1rem; font-size: .78rem; color: rgba(240,234,255,.25); text-align: center; }
+
+/* ROULETTE */
+.roulette-wrap { display: none; text-align: center; padding: 1rem 0; animation: fadeIn .4s ease; }
+.roulette-title { font-family: 'Black Han Sans', sans-serif; font-size: 1rem; color: rgba(240,234,255,.5); margin-bottom: 1rem; }
+.spin-ring { width: 100px; height: 100px; border-radius: 50%;
+  border: 3px solid rgba(255,157,226,.3); border-top-color: #ff9de2;
+  margin: 0 auto .8rem; display: flex; align-items: center; justify-content: center;
+  animation: spin .4s linear infinite; font-size: 2.5rem; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.roulette-name { font-family: 'Black Han Sans', sans-serif; font-size: 1.1rem; color: rgba(240,234,255,.7); }
+.separator { display: flex; align-items: center; gap: 10px; margin: 1.5rem 0; }
+.sep-line { flex: 1; height: 1px; background: rgba(255,255,255,.08); }
+.sep-text { font-size: .75rem; color: rgba(240,234,255,.3); }
+.random-btn { width: 100%; background: rgba(255,255,255,.04);
+  border: 1px dashed rgba(255,255,255,.2); border-radius: 14px; padding: .8rem;
+  color: rgba(240,234,255,.5); font-family: 'Nanum Gothic', sans-serif; font-size: .85rem;
+  cursor: pointer; transition: all .2s; }
+.random-btn:hover { border-color: rgba(255,206,133,.4); color: #ffce85; background: rgba(255,206,133,.05); }
+
+/* ===================== HISTORY PAGE ===================== */
+.history-wrap { max-width: 720px; margin: 0 auto; padding: 5.5rem 1.5rem 3rem; }
+.history-top { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 1.8rem; flex-wrap: wrap; gap: 12px; }
+.history-title-group {}
+.history-title { font-family: 'Black Han Sans', sans-serif; font-size: 1.8rem; color: #f0eaff; line-height: 1.1; }
+.history-subtitle { font-size: .82rem; color: rgba(240,234,255,.38); margin-top: 4px; }
+.history-stats { display: flex; gap: 10px; }
+.hstat { background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08); border-radius: 12px;
+  padding: 8px 14px; text-align: center; }
+.hstat-num { font-family: 'Black Han Sans', sans-serif; font-size: 1.3rem; color: #ff9de2; line-height: 1; }
+.hstat-label { font-size: .7rem; color: rgba(240,234,255,.38); margin-top: 3px; }
+
+/* TIMELINE */
+.timeline { position: relative; padding-left: 0; }
+
+.tl-month-header { display: flex; align-items: center; gap: 12px; margin: 2rem 0 1rem; }
+.tl-month-line { flex: 1; height: 1px; background: rgba(255,255,255,.07); }
+.tl-month-label { font-family: 'Black Han Sans', sans-serif; font-size: .85rem;
+  color: rgba(240,234,255,.35); letter-spacing: .06em; white-space: nowrap; }
+
+.tl-day-group { margin-bottom: 6px; }
+.tl-day-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; cursor: pointer; }
+.tl-day-dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,157,226,.35);
+  flex-shrink: 0; transition: background .2s; }
+.tl-day-group:hover .tl-day-dot { background: #ff9de2; }
+.tl-day-label { font-size: .8rem; color: rgba(240,234,255,.4); font-weight: 700; }
+.tl-day-count { font-size: .72rem; background: rgba(255,255,255,.07); border-radius: 20px;
+  padding: 2px 8px; color: rgba(240,234,255,.35); }
+.tl-connector { flex: 1; height: 1px; background: rgba(255,255,255,.05); }
+
+.tl-entries { display: flex; flex-direction: column; gap: 8px; padding-left: 20px;
+  border-left: 1px solid rgba(255,255,255,.06); margin-left: 4px; padding-bottom: 12px; }
+
+.tl-entry { display: flex; align-items: center; gap: 12px;
+  background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07);
+  border-radius: 14px; padding: 12px 16px; transition: all .15s; position: relative; }
+.tl-entry:hover { background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.12); }
+.tl-entry-emoji { font-size: 1.8rem; flex-shrink: 0; width: 40px; text-align: center; }
+.tl-entry-body { flex: 1; min-width: 0; }
+.tl-entry-name { font-family: 'Black Han Sans', sans-serif; font-size: 1rem; color: #f0eaff; }
+.tl-entry-time { font-size: .72rem; color: rgba(240,234,255,.35); margin-top: 2px; }
+.tl-entry-note { font-size: .78rem; color: rgba(240,234,255,.5); margin-top: 4px;
+  font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tl-entry-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+.tl-entry-score { font-size: .7rem; color: rgba(240,234,255,.3); }
+.tl-del-btn { background: transparent; border: 1px solid rgba(255,80,80,.18);
+  border-radius: 7px; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center;
+  color: rgba(255,100,100,.4); cursor: pointer; font-size: .85rem; transition: all .15s; }
+.tl-del-btn:hover { background: rgba(255,80,80,.1); border-color: rgba(255,100,100,.5); color: #ff6464; }
+
+/* EMPTY STATE */
+.history-empty { text-align: center; padding: 4rem 2rem; }
+.history-empty-emoji { font-size: 4rem; display: block; margin-bottom: 1rem; opacity: .4; }
+.history-empty-text { font-family: 'Black Han Sans', sans-serif; font-size: 1.1rem; color: rgba(240,234,255,.3); margin-bottom: .5rem; }
+.history-empty-hint { font-size: .82rem; color: rgba(240,234,255,.2); }
+
+/* HEAT CHART */
+.heat-section { margin-bottom: 2rem; }
+.heat-title { font-size: .78rem; color: rgba(240,234,255,.35); margin-bottom: .8rem; letter-spacing: .06em; }
+.heat-chart { display: flex; gap: 4px; flex-wrap: wrap; }
+.heat-cell { width: 14px; height: 14px; border-radius: 3px; background: rgba(255,255,255,.06); transition: all .2s; }
+.heat-cell.h1 { background: rgba(255,157,226,.25); }
+.heat-cell.h2 { background: rgba(255,157,226,.5); }
+.heat-cell.h3 { background: rgba(255,157,226,.8); }
+.heat-cell:hover { transform: scale(1.3); }
+
+/* FAVORITE */
+.fav-section { margin-bottom: 2rem; }
+.fav-title { font-size: .78rem; color: rgba(240,234,255,.35); margin-bottom: .8rem; letter-spacing: .06em; }
+.fav-list { display: flex; gap: 8px; flex-wrap: wrap; }
+.fav-chip { display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.1); border-radius: 30px; padding: 6px 14px; }
+.fav-chip-emoji { font-size: 1.1rem; }
+.fav-chip-name { font-size: .82rem; font-weight: 700; color: rgba(240,234,255,.7); }
+.fav-chip-cnt { font-size: .72rem; color: rgba(240,234,255,.35); }
+.fav-chip.rank1 { border-color: rgba(255,206,133,.4); background: rgba(255,206,133,.08); }
+.fav-chip.rank1 .fav-chip-name { color: #ffce85; }
+
+/* NOTE MODAL */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 500;
+  display: none; align-items: center; justify-content: center; padding: 1.5rem; }
+.modal-overlay.open { display: flex; }
+.modal-box { background: #14102a; border: 1px solid rgba(255,255,255,.12);
+  border-radius: 20px; padding: 1.8rem; width: 100%; max-width: 400px; animation: fadeIn .25s ease; }
+.modal-title { font-family: 'Black Han Sans', sans-serif; font-size: 1.2rem; color: #f0eaff; margin-bottom: .4rem; }
+.modal-sub { font-size: .82rem; color: rgba(240,234,255,.4); margin-bottom: 1.2rem; }
+.modal-input { width: 100%; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12);
+  border-radius: 12px; padding: 10px 14px; color: #f0eaff; font-family: 'Nanum Gothic', sans-serif;
+  font-size: .9rem; outline: none; resize: none; margin-bottom: 1rem; }
+.modal-input:focus { border-color: rgba(255,157,226,.4); }
+.modal-btns { display: flex; gap: 8px; }
+.modal-ok { flex: 1; background: linear-gradient(135deg,#ff9de2,#ffce85); border: none;
+  border-radius: 12px; padding: .8rem; font-family: 'Black Han Sans', sans-serif;
+  font-size: 1rem; color: #1a0a2e; cursor: pointer; }
+.modal-cancel { flex: 1; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 12px; padding: .8rem; font-family: 'Black Han Sans', sans-serif;
+  font-size: 1rem; color: rgba(240,234,255,.5); cursor: pointer; }
+
+/* SETTINGS */
+.settings-container { max-width: 600px; margin: 0 auto; padding: 5.5rem 1.5rem 3rem; }
+.settings-title { font-family: 'Black Han Sans', sans-serif; font-size: 1.6rem; margin-bottom: .3rem; color: #f0eaff; }
+.settings-subtitle { font-size: .85rem; color: rgba(240,234,255,.4); margin-bottom: 2rem; }
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+.section-title { font-family: 'Black Han Sans', sans-serif; font-size: 1rem; color: rgba(240,234,255,.7); }
+.section-desc { font-size: .78rem; color: rgba(240,234,255,.35); margin-top: 2px; }
+.settings-card { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.09);
+  border-radius: 18px; padding: 1.4rem 1.6rem; margin-bottom: 1.2rem; }
+.setting-row { display: flex; align-items: center; justify-content: space-between;
+  padding: .7rem 0; border-bottom: 1px solid rgba(255,255,255,.06); }
+.setting-row:last-child { border-bottom: none; padding-bottom: 0; }
+.setting-row:first-child { padding-top: 0; }
+.setting-info { flex: 1; }
+.setting-label { font-size: .9rem; font-weight: 700; color: #f0eaff; margin-bottom: 2px; }
+.setting-hint { font-size: .75rem; color: rgba(240,234,255,.38); }
+.toggle { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider { position: absolute; inset: 0; background: rgba(255,255,255,.12); border-radius: 24px; cursor: pointer; transition: .25s; }
+.toggle-slider::before { content: ''; position: absolute; width: 18px; height: 18px;
+  left: 3px; top: 3px; background: rgba(240,234,255,.6); border-radius: 50%; transition: .25s; }
+.toggle input:checked + .toggle-slider { background: rgba(255,157,226,.35); }
+.toggle input:checked + .toggle-slider::before { transform: translateX(20px); background: #ff9de2; }
+.menu-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1rem; }
+.menu-item { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08); border-radius: 12px; padding: 10px 14px; }
+.menu-item.disabled { opacity: .4; }
+.menu-emoji-badge { font-size: 1.4rem; width: 36px; text-align: center; flex-shrink: 0; }
+.menu-info { flex: 1; min-width: 0; }
+.menu-item-name { font-size: .9rem; font-weight: 700; color: #f0eaff; }
+.menu-item-tags { font-size: .72rem; color: rgba(240,234,255,.35); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+.menu-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.menu-toggle-btn { background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12);
+  border-radius: 8px; padding: 4px 10px; font-size: .72rem; color: rgba(240,234,255,.55); cursor: pointer; transition: all .15s; }
+.menu-toggle-btn.on { background: rgba(255,157,226,.12); border-color: rgba(255,157,226,.3); color: #ff9de2; }
+.menu-delete-btn { background: transparent; border: 1px solid rgba(255,80,80,.2); border-radius: 8px;
+  width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+  color: rgba(255,100,100,.5); cursor: pointer; font-size: .9rem; transition: all .15s; }
+.menu-delete-btn:hover { background: rgba(255,80,80,.1); border-color: rgba(255,100,100,.5); color: #ff6464; }
+.add-menu-form { background: rgba(255,255,255,.03); border: 1px dashed rgba(255,255,255,.15);
+  border-radius: 14px; padding: 1.2rem; margin-top: .5rem; }
+.add-form-title { font-size: .82rem; font-weight: 700; color: rgba(240,234,255,.5); margin-bottom: 1rem; }
+.form-row { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+.form-input { flex: 1; min-width: 80px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12);
+  border-radius: 10px; padding: 9px 12px; color: #f0eaff; font-family: 'Nanum Gothic', sans-serif;
+  font-size: .88rem; outline: none; transition: border .2s; }
+.form-input::placeholder { color: rgba(240,234,255,.25); }
+.form-input:focus { border-color: rgba(255,157,226,.4); }
+.form-input.emoji-input { width: 64px; min-width: 64px; flex: none; text-align: center; font-size: 1.2rem; }
+.form-input.full { width: 100%; flex: none; }
+.add-btn { background: linear-gradient(135deg,rgba(255,157,226,.2),rgba(255,206,133,.2));
+  border: 1px solid rgba(255,157,226,.3); border-radius: 10px; padding: 9px 18px;
+  color: #ff9de2; font-family: 'Nanum Gothic', sans-serif; font-size: .88rem; font-weight: 700;
+  cursor: pointer; transition: all .18s; white-space: nowrap; }
+.add-btn:hover { transform: translateY(-1px); }
+.mood-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; }
+.mood-opt { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.09); border-radius: 12px; padding: 10px 12px; cursor: pointer; transition: all .15s; }
+.mood-opt.selected { background: rgba(255,157,226,.1); border-color: rgba(255,157,226,.35); }
+.mood-opt-emoji { font-size: 1.2rem; }
+.mood-opt-label { font-size: .85rem; font-weight: 700; color: rgba(240,234,255,.65); }
+.mood-opt.selected .mood-opt-label { color: #ff9de2; }
+.save-bar { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
+  background: rgba(20,15,35,.95); border: 1px solid rgba(255,255,255,.12); border-radius: 16px;
+  padding: .8rem 1.2rem; display: flex; align-items: center; gap: 12px;
+  backdrop-filter: blur(12px); z-index: 200; opacity: 0; pointer-events: none; transition: opacity .2s; }
+.save-bar.visible { opacity: 1; pointer-events: auto; }
+.save-bar-text { font-size: .82rem; color: rgba(240,234,255,.55); }
+.save-bar-btn { background: linear-gradient(135deg,#ff9de2,#ffce85); border: none; border-radius: 10px;
+  padding: 7px 18px; font-family: 'Black Han Sans', sans-serif; font-size: .88rem; color: #1a0a2e; cursor: pointer; }
+.count-badge { background: rgba(255,157,226,.15); border-radius: 20px; padding: 3px 10px;
+  font-size: .75rem; color: #ff9de2; font-weight: 700; }
+.toast { position: fixed; top: 5rem; left: 50%; transform: translateX(-50%) translateY(-8px);
+  background: rgba(30,20,50,.95); border: 1px solid rgba(255,157,226,.3); border-radius: 12px;
+  padding: 10px 20px; font-size: .85rem; color: #ff9de2; backdrop-filter: blur(10px);
+  z-index: 300; opacity: 0; transition: all .25s; pointer-events: none; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<div class="stars"></div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <button class="nav-btn active" id="nav-game" onclick="goPage('game',this)">🌙 야식 추천</button>
+    <button class="nav-btn" id="nav-history" onclick="goPage('history',this)">📅 기록</button>
+    <button class="nav-btn" id="nav-settings" onclick="goPage('settings',this)">⚙️ 설정</button>
+  </div>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<!-- NOTE MODAL -->
+<div class="modal-overlay" id="note-modal">
+  <div class="modal-box">
+    <p class="modal-title" id="modal-menu-title">🍗 치킨</p>
+    <p class="modal-sub">한 마디 남기고 싶은 말이 있으면 적어봐요 (선택)</p>
+    <textarea class="modal-input" id="modal-note" rows="3" placeholder="예: 반반무마니로 시켰는데 완전 맛있었음..."></textarea>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeModal()">취소</button>
+      <button class="modal-ok" onclick="confirmEat()">기록할게! ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== GAME PAGE ===== -->
+<div class="page active" id="page-game">
+  <div class="container">
+    <h1>🌙 야식 뭐 먹지?</h1>
+    <p class="subtitle">오늘 밤 당신의 야식을 찾아드립니다</p>
+    <div class="card">
+      <div id="quiz-section">
+        <div class="progress-bar" id="progress-bar"></div>
+        <div class="question-area" id="question-area"></div>
+        <div class="options" id="options-area"></div>
+        <div class="separator"><div class="sep-line"></div><span class="sep-text">또는</span><div class="sep-line"></div></div>
+        <button class="random-btn" id="random-btn" onclick="randomPick()">🎲 그냥 랜덤으로 골라줘!</button>
+        <div class="roulette-wrap" id="roulette-wrap">
+          <p class="roulette-title">메뉴 뽑는 중...</p>
+          <div class="spin-ring" id="spin-emoji">🍜</div>
+          <p class="roulette-name" id="spin-name"></p>
+        </div>
+      </div>
+      <div class="result-area" id="result-area">
+        <span class="result-emoji" id="res-emoji"></span>
+        <p class="result-name" id="res-name"></p>
+        <p class="result-desc" id="res-desc"></p>
+        <div class="result-tags" id="res-tags"></div>
+        <div class="result-runner-up" id="res-runner-up"></div>
+        <button class="eat-btn" id="eat-btn" onclick="openEatModal()">🍽️ 이걸로 먹을래!</button>
+        <button class="restart-btn" onclick="restart()">🔄 다시 추천받기</button>
+        <p class="tip-text" id="tip-text">맛있게 드세요 🌙</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== HISTORY PAGE ===== -->
+<div class="page" id="page-history">
+  <div class="history-wrap">
+    <div class="history-top">
+      <div class="history-title-group">
+        <p class="history-title">📅 야식 기록장</p>
+        <p class="history-subtitle">내가 먹은 야식들의 기억</p>
+      </div>
+      <div class="history-stats" id="history-stats"></div>
+    </div>
+    <div id="history-body"></div>
+  </div>
+</div>
+
+<!-- ===== SETTINGS PAGE ===== -->
+<div class="page" id="page-settings">
+  <div class="settings-container">
+    <p class="settings-title">⚙️ 설정</p>
+    <p class="settings-subtitle">게임 방식과 메뉴를 내 입맛대로 커스텀하세요</p>
+    <div class="settings-card">
+      <div class="section-header"><div><p class="section-title">🎮 게임 옵션</p></div></div>
+      <div class="setting-row">
+        <div class="setting-info"><p class="setting-label">2위까지 결과 보여주기</p><p class="setting-hint">결과 화면에 2~3위 후보 메뉴도 표시</p></div>
+        <label class="toggle"><input type="checkbox" id="opt-runner-up" onchange="markDirty()"><span class="toggle-slider"></span></label>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info"><p class="setting-label">랜덤 버튼 표시</p><p class="setting-hint">질문 없이 바로 뽑는 룰렛 버튼</p></div>
+        <label class="toggle"><input type="checkbox" id="opt-random-btn" onchange="markDirty()" checked><span class="toggle-slider"></span></label>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info"><p class="setting-label">비활성 메뉴 추천에서 제외</p><p class="setting-hint">끄기로 설정한 메뉴는 추천·룰렛에서 제외</p></div>
+        <label class="toggle"><input type="checkbox" id="opt-exclude-disabled" onchange="markDirty()" checked><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+    <div class="settings-card">
+      <div class="section-header"><div><p class="section-title">🌙 나의 야식 스타일</p><p class="section-desc">기본 예산 선호도를 설정해요</p></div></div>
+      <div class="setting-row" style="border-bottom:none;padding-bottom:0;flex-direction:column;align-items:flex-start;gap:10px;">
+        <div class="mood-grid" id="budget-pref">
+          <div class="mood-opt selected" data-val="any" onclick="selectMood('budget-pref',this)"><span class="mood-opt-emoji">🤷</span><span class="mood-opt-label">상관없음</span></div>
+          <div class="mood-opt" data-val="cheap" onclick="selectMood('budget-pref',this)"><span class="mood-opt-emoji">🪙</span><span class="mood-opt-label">저렴하게</span></div>
+          <div class="mood-opt" data-val="mid" onclick="selectMood('budget-pref',this)"><span class="mood-opt-emoji">💵</span><span class="mood-opt-label">적당히</span></div>
+          <div class="mood-opt" data-val="expensive" onclick="selectMood('budget-pref',this)"><span class="mood-opt-emoji">💰</span><span class="mood-opt-label">푸짐하게</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="settings-card">
+      <div class="section-header">
+        <div><p class="section-title">🍽️ 메뉴 관리</p><p class="section-desc">추천 메뉴를 켜고 끄거나 새로 추가하세요</p></div>
+        <span class="count-badge" id="menu-count-badge">0개</span>
+      </div>
+      <div class="menu-list" id="menu-list"></div>
+      <div class="add-menu-form">
+        <p class="add-form-title">+ 새 메뉴 추가</p>
+        <div class="form-row">
+          <input class="form-input emoji-input" id="new-emoji" placeholder="🍔" maxlength="2">
+          <input class="form-input" id="new-name" placeholder="메뉴 이름 (예: 순대국밥)">
+        </div>
+        <div class="form-row">
+          <input class="form-input full" id="new-desc" placeholder="한 줄 설명 (예: 뜨끈한 국물에 속이 풀리는 야식)">
+        </div>
+        <div class="form-row">
+          <input class="form-input full" id="new-tags" placeholder="태그 (쉼표로 구분: 국물요리,따뜻함,든든)">
+        </div>
+        <div class="form-row" style="margin-bottom:0;">
+          <select class="form-input" id="new-mood" style="flex:1;">
+            <option value="any">🤷 아무 때나</option>
+            <option value="spicy">🌶️ 매운맛</option>
+            <option value="sweet">🍬 달달함</option>
+            <option value="meat">🥩 고기류</option>
+            <option value="simple">🥡 간단하게</option>
+          </select>
+          <select class="form-input" id="new-temp" style="flex:1;">
+            <option value="any">🌡️ 온도 무관</option>
+            <option value="hot">🔥 따뜻함</option>
+            <option value="cold">❄️ 차가움</option>
+          </select>
+          <button class="add-btn" onclick="addMenu()">추가 ✓</button>
+        </div>
+      </div>
+    </div>
+    <div style="height:80px;"></div>
+  </div>
+</div>
+
+<div class="save-bar" id="save-bar">
+  <span class="save-bar-text">저장되지 않은 변경사항이 있어요</span>
+  <button class="save-bar-btn" onclick="saveSettings()">저장하기</button>
+</div>
+
+<script>
+// ===== DEFAULT DATA =====
+const DEFAULT_MENUS = [
+  {id:1,name:"치킨",emoji:"🍗",desc:"황금빛 바삭한 치킨! 야식의 영원한 클래식.",tags:["국민야식","배달가능","맥주안주"],mood:"meat",temp:"hot",enabled:true,custom:false},
+  {id:2,name:"라면",emoji:"🍜",desc:"새벽 감성 한 방울, 라면 한 그릇.",tags:["혼자야식","저렴","빠름"],mood:"simple",temp:"hot",enabled:true,custom:false},
+  {id:3,name:"피자",emoji:"🍕",desc:"치즈가 쭈욱 늘어나는 피자!",tags:["여럿이","배달가능","든든함"],mood:"sweet",temp:"hot",enabled:true,custom:false},
+  {id:4,name:"떡볶이",emoji:"🌶️",desc:"매콤달콤한 떡볶이! 스트레스 날아가는 느낌.",tags:["매운맛","저렴","포장마차"],mood:"spicy",temp:"hot",enabled:true,custom:false},
+  {id:5,name:"족발/보쌈",emoji:"🥩",desc:"쫄깃한 족발과 새콤한 겉절이의 조화.",tags:["여럿이","든든함","안주용"],mood:"meat",temp:"hot",enabled:true,custom:false},
+  {id:6,name:"아이스크림",emoji:"🍦",desc:"달달하고 시원한 아이스크림!",tags:["가볍게","달달함","편의점픽"],mood:"sweet",temp:"cold",enabled:true,custom:false},
+  {id:7,name:"곱창/막창",emoji:"🍢",desc:"불 위에서 지글지글~ 야식 고수들의 선택.",tags:["특별한야식","안주용","불맛"],mood:"meat",temp:"hot",enabled:true,custom:false},
+  {id:8,name:"편의점 도시락",emoji:"🍱",desc:"가성비 최강 편의점 도시락!",tags:["혼자야식","빠름","가성비"],mood:"simple",temp:"any",enabled:true,custom:false},
+  {id:9,name:"냉면",emoji:"🫙",desc:"시원하고 새콤한 냉면 한 그릇.",tags:["시원함","가볍게","개운함"],mood:"simple",temp:"cold",enabled:true,custom:false},
+  {id:10,name:"삼겹살",emoji:"🥓",desc:"숯불에 구워먹는 삼겹살!",tags:["여럿이","고기파티","소주필수"],mood:"meat",temp:"hot",enabled:true,custom:false},
+  {id:11,name:"떡순이/야식세트",emoji:"🛒",desc:"떡볶이+순대+오뎅 콤보!",tags:["매운맛","세트구성","저렴"],mood:"spicy",temp:"hot",enabled:true,custom:false},
+  {id:12,name:"마라탕",emoji:"🫕",desc:"얼얼하고 중독적인 마라탕!",tags:["매운맛","얼얼함","중독주의"],mood:"spicy",temp:"hot",enabled:true,custom:false},
+];
+const DEFAULT_SETTINGS = {showRunnerUp:false,showRandomBtn:true,excludeDisabled:true,budgetPref:"any"};
+
+let menus=[], settings={}, history=[], isDirty=false, nextId=100;
+let pendingEat=null;
+
+function loadState() {
+  try {
+    const sm=localStorage.getItem("yasik_menus");
+    const ss=localStorage.getItem("yasik_settings");
+    const sh=localStorage.getItem("yasik_history");
+    menus=sm?JSON.parse(sm):JSON.parse(JSON.stringify(DEFAULT_MENUS));
+    settings=ss?JSON.parse(ss):{...DEFAULT_SETTINGS};
+    history=sh?JSON.parse(sh):[];
+    nextId=Math.max(...menus.map(m=>m.id),99)+1;
+  } catch(e) {
+    menus=JSON.parse(JSON.stringify(DEFAULT_MENUS));
+    settings={...DEFAULT_SETTINGS};
+    history=[];
+  }
+}
+function saveState() {
+  localStorage.setItem("yasik_menus",JSON.stringify(menus));
+  localStorage.setItem("yasik_settings",JSON.stringify(settings));
+  localStorage.setItem("yasik_history",JSON.stringify(history));
+}
+
+// NAV
+function goPage(name,btn) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  (btn||document.getElementById('nav-'+name)).classList.add('active');
+  if(name==='settings') renderSettings();
+  if(name==='history') renderHistory();
+}
+
+// ===== EAT MODAL =====
+let currentResultMenu = null;
+function openEatModal() {
+  if(!currentResultMenu) return;
+  document.getElementById('modal-menu-title').textContent = currentResultMenu.emoji+' '+currentResultMenu.name;
+  document.getElementById('modal-note').value = '';
+  document.getElementById('note-modal').classList.add('open');
+}
+function closeModal() { document.getElementById('note-modal').classList.remove('open'); }
+function confirmEat() {
+  const note = document.getElementById('modal-note').value.trim();
+  const now = new Date();
+  const entry = {
+    id: Date.now(),
+    menuId: currentResultMenu.id,
+    name: currentResultMenu.name,
+    emoji: currentResultMenu.emoji,
+    note: note,
+    ts: now.getTime(),
+    dateStr: formatDate(now),
+    timeStr: formatTime(now),
+  };
+  history.unshift(entry);
+  saveState();
+  closeModal();
+  // update button
+  const eatBtn = document.getElementById('eat-btn');
+  eatBtn.textContent = '✓ 냠냠 기록됐어요!';
+  eatBtn.classList.add('eaten');
+  eatBtn.disabled = true;
+  document.getElementById('tip-text').textContent = '기록 탭에서 야식 히스토리를 확인해봐요 📅';
+  showToast('야식 기록 완료! '+currentResultMenu.emoji);
+}
+function formatDate(d) {
+  const days=['일','월','화','수','목','금','토'];
+  return `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
+}
+function formatTime(d) {
+  const h=d.getHours(), m=d.getMinutes();
+  const ampm=h<12?'오전':'오후';
+  const hh=h%12||12;
+  return `${ampm} ${hh}:${String(m).padStart(2,'0')}`;
+}
+function formatMonthKey(ts) {
+  const d=new Date(ts);
+  return `${d.getFullYear()}년 ${d.getMonth()+1}월`;
+}
+
+// ===== HISTORY RENDER =====
+function renderHistory() {
+  const body = document.getElementById('history-body');
+  const statsEl = document.getElementById('history-stats');
+
+  if(history.length===0) {
+    statsEl.innerHTML='';
+    body.innerHTML=`<div class="history-empty">
+      <span class="history-empty-emoji">🌙</span>
+      <p class="history-empty-text">아직 야식 기록이 없어요</p>
+      <p class="history-empty-hint">추천 받은 뒤 "이걸로 먹을래!" 버튼을 눌러보세요</p>
+    </div>`;
+    return;
+  }
+
+  // stats
+  const total = history.length;
+  const favMap={};
+  history.forEach(e=>{ favMap[e.name]=(favMap[e.name]||0)+1; });
+  const favName = Object.entries(favMap).sort((a,b)=>b[1]-a[1])[0];
+  statsEl.innerHTML=`
+    <div class="hstat"><p class="hstat-num">${total}</p><p class="hstat-label">총 야식</p></div>
+    <div class="hstat"><p class="hstat-num">${Object.keys(favMap).length}</p><p class="hstat-label">종류</p></div>
+    ${favName?`<div class="hstat"><p class="hstat-num">${favName[0].length>4?favName[0].slice(0,4)+'..':favName[0]}</p><p class="hstat-label">최애메뉴</p></div>`:''}`;
+
+  // favorites
+  const favSorted = Object.entries(favMap).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const favMenu = menus.find(m=>m.name===favSorted[0]?.[0]);
+  let favHTML = `<div class="fav-section"><p class="fav-title">⭐ 자주 먹은 메뉴</p><div class="fav-list">`;
+  favSorted.forEach(([name,cnt],i)=>{
+    const m=menus.find(m=>m.name===name);
+    favHTML+=`<div class="fav-chip ${i===0?'rank1':''}">
+      <span class="fav-chip-emoji">${m?m.emoji:'🍽️'}</span>
+      <span class="fav-chip-name">${name}</span>
+      <span class="fav-chip-cnt">${cnt}회</span>
+    </div>`;
+  });
+  favHTML+=`</div></div>`;
+
+  // heat chart (last 60 days)
+  const heatMap={};
+  history.forEach(e=>{ const d=new Date(e.ts); const k=`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`; heatMap[k]=(heatMap[k]||0)+1; });
+  let heatHTML=`<div class="heat-section"><p class="heat-title">🔥 최근 60일 야식 빈도</p><div class="heat-chart">`;
+  const now=new Date();
+  for(let i=59;i>=0;i--) {
+    const d=new Date(now); d.setDate(d.getDate()-i);
+    const k=`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    const cnt=heatMap[k]||0;
+    const cls=cnt===0?'':cnt===1?'h1':cnt===2?'h2':'h3';
+    heatHTML+=`<div class="heat-cell ${cls}" title="${d.getMonth()+1}/${d.getDate()} · ${cnt}회"></div>`;
+  }
+  heatHTML+=`</div></div>`;
+
+  // group by month then day
+  const monthGroups={};
+  history.forEach(e=>{
+    const mk=formatMonthKey(e.ts);
+    if(!monthGroups[mk]) monthGroups[mk]=[];
+    monthGroups[mk].push(e);
+  });
+
+  let tlHTML='';
+  Object.entries(monthGroups).forEach(([month,entries])=>{
+    tlHTML+=`<div class="tl-month-header"><span class="tl-month-label">${month}</span><div class="tl-month-line"></div></div>`;
+    const dayGroups={};
+    entries.forEach(e=>{
+      if(!dayGroups[e.dateStr]) dayGroups[e.dateStr]=[];
+      dayGroups[e.dateStr].push(e);
+    });
+    Object.entries(dayGroups).forEach(([day,dayEntries])=>{
+      tlHTML+=`<div class="tl-day-group">
+        <div class="tl-day-header">
+          <div class="tl-day-dot"></div>
+          <span class="tl-day-label">${day}</span>
+          <span class="tl-day-count">${dayEntries.length}개</span>
+          <div class="tl-connector"></div>
+        </div>
+        <div class="tl-entries">`;
+      dayEntries.forEach(e=>{
+        tlHTML+=`<div class="tl-entry" id="entry-${e.id}">
+          <div class="tl-entry-emoji">${e.emoji}</div>
+          <div class="tl-entry-body">
+            <p class="tl-entry-name">${e.name}</p>
+            <p class="tl-entry-time">${e.timeStr}</p>
+            ${e.note?`<p class="tl-entry-note">"${e.note}"</p>`:''}
+          </div>
+          <div class="tl-entry-right">
+            <button class="tl-del-btn" onclick="deleteEntry(${e.id})" title="삭제">✕</button>
+          </div>
+        </div>`;
+      });
+      tlHTML+=`</div></div>`;
+    });
+  });
+
+  body.innerHTML = heatHTML + favHTML + `<div class="timeline">${tlHTML}</div>`;
+}
+
+function deleteEntry(id) {
+  history=history.filter(e=>e.id!==id);
+  saveState();
+  renderHistory();
+}
+
+// ===== SETTINGS =====
+function renderSettings() {
+  document.getElementById('opt-runner-up').checked=settings.showRunnerUp;
+  document.getElementById('opt-random-btn').checked=settings.showRandomBtn;
+  document.getElementById('opt-exclude-disabled').checked=settings.excludeDisabled;
+  document.querySelectorAll('#budget-pref .mood-opt').forEach(el=>el.classList.toggle('selected',el.dataset.val===settings.budgetPref));
+  renderMenuList(); updateMenuCount();
+}
+function renderMenuList() {
+  document.getElementById('menu-list').innerHTML=menus.map(m=>`
+    <div class="menu-item ${m.enabled?'':'disabled'}">
+      <div class="menu-emoji-badge">${m.emoji}</div>
+      <div class="menu-info">
+        <p class="menu-item-name">${m.name}</p>
+        <p class="menu-item-tags">${m.tags.map(t=>'#'+t).join(' ')}</p>
+      </div>
+      <div class="menu-actions">
+        <button class="menu-toggle-btn ${m.enabled?'on':''}" onclick="toggleMenu(${m.id})">${m.enabled?'켜짐':'꺼짐'}</button>
+        ${m.custom?`<button class="menu-delete-btn" onclick="deleteMenu(${m.id})">✕</button>`:''}
+      </div>
+    </div>`).join('');
+}
+function updateMenuCount() {
+  const a=menus.filter(m=>m.enabled).length;
+  document.getElementById('menu-count-badge').textContent=`${a}/${menus.length}개 활성`;
+}
+function selectMood(gid,el) {
+  document.querySelectorAll(`#${gid} .mood-opt`).forEach(e=>e.classList.remove('selected'));
+  el.classList.add('selected');
+  if(gid==='budget-pref') settings.budgetPref=el.dataset.val;
+  markDirty();
+}
+function toggleMenu(id) {
+  const m=menus.find(m=>m.id===id);
+  if(m){m.enabled=!m.enabled;renderMenuList();updateMenuCount();markDirty();}
+}
+function deleteMenu(id) {
+  if(!confirm('삭제할까요?')) return;
+  menus=menus.filter(m=>m.id!==id);
+  renderMenuList();updateMenuCount();markDirty();
+}
+function addMenu() {
+  const emoji=document.getElementById('new-emoji').value.trim()||'🍽️';
+  const name=document.getElementById('new-name').value.trim();
+  const desc=document.getElementById('new-desc').value.trim();
+  const tagsRaw=document.getElementById('new-tags').value.trim();
+  const mood=document.getElementById('new-mood').value;
+  const temp=document.getElementById('new-temp').value;
+  if(!name){showToast('메뉴 이름을 입력해주세요!');return;}
+  const tags=tagsRaw?tagsRaw.split(',').map(t=>t.trim()).filter(Boolean):[name];
+  menus.push({id:nextId++,name,emoji,desc:desc||`${name}! 새로 추가된 야식 메뉴.`,tags,mood,temp,enabled:true,custom:true});
+  ['new-emoji','new-name','new-desc','new-tags'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('new-mood').value='any';
+  document.getElementById('new-temp').value='any';
+  renderMenuList();updateMenuCount();markDirty();
+  showToast(`'${name}' 추가됐어요! 🎉`);
+}
+function markDirty() {
+  settings.showRunnerUp=document.getElementById('opt-runner-up').checked;
+  settings.showRandomBtn=document.getElementById('opt-random-btn').checked;
+  settings.excludeDisabled=document.getElementById('opt-exclude-disabled').checked;
+  isDirty=true;
+  document.getElementById('save-bar').classList.add('visible');
+}
+function saveSettings() {
+  saveState(); isDirty=false;
+  document.getElementById('save-bar').classList.remove('visible');
+  const rb=document.getElementById('random-btn');
+  if(rb) rb.style.display=settings.showRandomBtn?'block':'none';
+  showToast('설정 저장 완료 ✓');
+}
+function showToast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+// ===== QUIZ =====
+const questions=[
+  {emoji:"😤",text:"지금 당신의 배고픔 단계는?",options:[{emoji:"😐",label:"좀 출출해",val:"light"},{emoji:"😤",label:"꽤 배고파",val:"medium"},{emoji:"🤤",label:"엄청 배고파",val:"heavy"},{emoji:"💀",label:"죽을 것 같아",val:"starving"}]},
+  {emoji:"🌡️",text:"따뜻한 거 vs 차가운 거?",options:[{emoji:"🔥",label:"뜨끈한 게 좋아",val:"hot"},{emoji:"❄️",label:"차가운 게 좋아",val:"cold"},{emoji:"🤷",label:"상관없어",val:"any_temp"},{emoji:"💦",label:"시원하고 든든하게",val:"cold_heavy"}]},
+  {emoji:"💸",text:"오늘 야식 예산은?",options:[{emoji:"🪙",label:"1만원 이하",val:"cheap"},{emoji:"💵",label:"1~2만원",val:"mid"},{emoji:"💰",label:"2만원 이상",val:"expensive"},{emoji:"😵",label:"배달비도 아까워",val:"free"}]},
+  {emoji:"👥",text:"혼자야 아니면 같이야?",options:[{emoji:"🧍",label:"혼자 먹을 거야",val:"solo"},{emoji:"👫",label:"둘이서",val:"two"},{emoji:"👨‍👩‍👧",label:"셋 이상",val:"group"},{emoji:"🤔",label:"아직 모르겠어",val:"any_size"}]},
+  {emoji:"🍽️",text:"오늘 느낌은?",options:[{emoji:"🌶️",label:"매운 게 당겨",val:"spicy"},{emoji:"🧀",label:"달달한 게 좋아",val:"sweet"},{emoji:"🥩",label:"든든하게 고기!",val:"meat"},{emoji:"🥡",label:"간단하게 뭔가",val:"simple"}]},
+];
+let answers={}, currentQ=0;
+
+function getActiveMenus() { return settings.excludeDisabled?menus.filter(m=>m.enabled):menus; }
+function scoreMenu(m,a) {
+  let s=0;
+  if(a.mood&&m.mood!=='any') s+=(m.mood===a.mood?4:0);
+  if(a.temp){
+    if(m.temp==='hot'&&a.temp==='hot') s+=3;
+    if(m.temp==='cold'&&(a.temp==='cold'||a.temp==='cold_heavy')) s+=3;
+    if(m.temp==='any') s+=1;
+  }
+  if(a.group&&['여럿이','고기파티'].some(t=>m.tags.includes(t))) s+=3;
+  if(a.solo&&['혼자야식','1인분','가성비'].some(t=>m.tags.includes(t))) s+=2;
+  if(a.hungry>=2&&['든든함','고열량','국민야식'].some(t=>m.tags.includes(t))) s+=2;
+  if(a.hungry===0&&['가볍게','저렴'].some(t=>m.tags.includes(t))) s+=2;
+  s+=Math.random()*.5;
+  return s;
+}
+function buildProgress() {
+  document.getElementById("progress-bar").innerHTML=questions.map((_,i)=>
+    `<div class="progress-dot ${i<currentQ?"done":i===currentQ?"active":""}"></div>`).join("");
+}
+function showQuestion(idx) {
+  const q=questions[idx];
+  document.getElementById("question-area").innerHTML=`<p class="q-label">질문 ${idx+1} / ${questions.length}</p><span class="q-emoji">${q.emoji}</span><p class="q-text">${q.text}</p>`;
+  document.getElementById("options-area").innerHTML=q.options.map(o=>`<button class="opt-btn" onclick="answer('${o.val}')"><span class="opt-emoji">${o.emoji}</span>${o.label}</button>`).join("");
+  buildProgress();
+}
+function answer(val) {
+  if(currentQ===0){const m={light:0,medium:1,heavy:2,starving:3};answers.hungry=m[val]??1;}
+  else if(currentQ===1) answers.temp=val;
+  else if(currentQ===2) answers.budget=val;
+  else if(currentQ===3){answers.solo=val==="solo";answers.two=val==="two";answers.group=val==="group";}
+  else if(currentQ===4) answers.mood=val;
+  currentQ++;
+  if(currentQ<questions.length) showQuestion(currentQ);
+  else showResult();
+}
+function showResult() {
+  const active=getActiveMenus();
+  if(active.length===0){alert('활성화된 메뉴가 없어요!');restart();return;}
+  const scored=active.map(m=>({...m,s:scoreMenu(m,answers)})).sort((a,b)=>b.s-a.s);
+  const top=scored[0];
+  currentResultMenu=top;
+  document.getElementById("quiz-section").style.display="none";
+  document.getElementById("result-area").style.display="block";
+  document.getElementById("res-emoji").textContent=top.emoji;
+  document.getElementById("res-name").textContent=top.name;
+  document.getElementById("res-desc").textContent=top.desc;
+  document.getElementById("res-tags").innerHTML=top.tags.map(t=>`<span class="tag">#${t}</span>`).join("");
+  const ru=document.getElementById('res-runner-up');
+  if(settings.showRunnerUp&&scored.length>1){
+    ru.innerHTML=`<p class="runner-label">이런 것도 어때요?</p><div class="runner-items">${scored.slice(1,3).map(r=>`<span class="runner-item">${r.emoji} ${r.name}</span>`).join('')}</div>`;
+  } else ru.innerHTML='';
+  const eb=document.getElementById('eat-btn');
+  eb.textContent='🍽️ 이걸로 먹을래!';
+  eb.classList.remove('eaten');
+  eb.disabled=false;
+  document.getElementById('tip-text').textContent='맛있게 드세요 🌙';
+}
+function restart() {
+  currentQ=0;answers={};currentResultMenu=null;
+  document.getElementById("result-area").style.display="none";
+  document.getElementById("quiz-section").style.display="block";
+  document.getElementById("roulette-wrap").style.display="none";
+  document.getElementById('random-btn').style.display=settings.showRandomBtn?'block':'none';
+  showQuestion(0);
+}
+let rouletteInterval=null;
+function randomPick() {
+  const active=getActiveMenus();
+  if(active.length===0){showToast('활성화된 메뉴가 없어요!');return;}
+  const wrap=document.getElementById("roulette-wrap");
+  wrap.style.display="block";
+  const se=document.getElementById("spin-emoji"),sn=document.getElementById("spin-name");
+  se.style.animation="spin .3s linear infinite";sn.textContent="";
+  let count=0;const maxCount=22;
+  if(rouletteInterval) clearInterval(rouletteInterval);
+  rouletteInterval=setInterval(()=>{
+    const r=active[Math.floor(Math.random()*active.length)];
+    se.textContent=r.emoji;sn.textContent=r.name;count++;
+    if(count>=maxCount){
+      clearInterval(rouletteInterval);
+      se.style.animation="none";
+      const final=active[Math.floor(Math.random()*active.length)];
+      currentResultMenu=final;
+      se.textContent=final.emoji;
+      sn.style.cssText="font-family:'Black Han Sans',sans-serif;font-size:1.3rem;color:#ff9de2;";
+      sn.textContent=final.name+"!";
+      // show eat button area below roulette
+      document.getElementById("result-area").style.display="block";
+      document.getElementById("res-emoji").textContent=final.emoji;
+      document.getElementById("res-name").textContent=final.name;
+      document.getElementById("res-desc").textContent=final.desc;
+      document.getElementById("res-tags").innerHTML=final.tags.map(t=>`<span class="tag">#${t}</span>`).join("");
+      document.getElementById("res-runner-up").innerHTML='';
+      const eb=document.getElementById('eat-btn');
+      eb.textContent='🍽️ 이걸로 먹을래!';eb.classList.remove('eaten');eb.disabled=false;
+      document.getElementById('tip-text').textContent='맛있게 드세요 🌙';
+    }
+  },100);
+}
+
+// INIT
+loadState();
+showQuestion(0);
+document.getElementById('random-btn').style.display=settings.showRandomBtn?'block':'none';
+</script>
+</body>
+</html>
