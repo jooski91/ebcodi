@@ -996,7 +996,7 @@ body{margin-left:0;margin-top:var(--total-h);transition:none}
 .ls-block:hover{opacity:.82;box-shadow:0 2px 8px rgba(0,0,0,.14);overflow:visible;z-index:50;}
 .ls-block-type{font-size:8px;font-weight:700;padding:0 3px;border-radius:2px;margin-bottom:1px;display:inline-block}
 .ls-block-name{font-weight:700;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ls-block-time{font-size:9px;opacity:.6;margin-top:1px}
+.ls-block-time{font-size:11px;font-weight:700;margin-top:1px}
 /* 30분 블록 툴팁 */
 .ls-block-tooltip{
   display:none;position:absolute;z-index:100;
@@ -5486,7 +5486,7 @@ function renderAllView(d){
     b.className='ls-block'+(l.status?' ls-block-'+l.status:'');
     if(dur<=30){
       b.style.cssText=`background:${col}1a;border-left-color:${col};height:${h}px;top:${topOffset+1}px;padding:2px 4px;display:flex;align-items:center;gap:3px;position:absolute;left:2px;right:2px;overflow:visible;z-index:3;border-radius:5px;border-left-width:3px;border-left-style:solid`;
-      b.innerHTML=`<div class="ls-block-name" style="font-size:10px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(l.student)}${tkn?`<span style="font-size:9px;opacity:.7;font-weight:600;margin-left:3px">${esc(tkn)}</span>`:''}</div><div style="font-size:9px;opacity:.6;flex-shrink:0;white-space:nowrap;margin-left:2px">${l.start}~${l.end}</div><div class="ls-block-tooltip"><strong>${esc(l.student)}</strong><br>${tkn?tkn+' · ':''}${l.start}~${l.end}${lsTicketInfoHtml(l)}</div>`;
+      b.innerHTML=`<div class="ls-block-name" style="font-size:10px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(l.student)}${tkn?`<span style="font-size:9px;opacity:.7;font-weight:600;margin-left:3px">${esc(tkn)}</span>`:''}</div><div style="font-size:10px;font-weight:700;flex-shrink:0;white-space:nowrap;margin-left:2px">${l.start}~${l.end}</div><div class="ls-block-tooltip"><strong>${esc(l.student)}</strong><br>${tkn?tkn+' · ':''}${l.start}~${l.end}${lsTicketInfoHtml(l)}</div>`;
     } else {
       b.style.cssText=`background:${col}1a;border-left-color:${col};height:${h}px;top:${topOffset+1}px;position:absolute;left:2px;right:2px;z-index:3;border-radius:5px;border-left-width:3px;border-left-style:solid;padding:3px 5px;overflow:hidden`;
       b.innerHTML=`<div class="ls-block-name">${esc(l.student)}</div>${tkn?`<div class="ls-block-time" style="opacity:.65">${esc(tkn)}</div>`:''}<div class="ls-block-time">${l.start}~${l.end}</div><div class="ls-block-tooltip"><strong>${esc(l.student)}</strong><br>${tkn?tkn+' · ':''}${l.start}~${l.end}${lsTicketInfoHtml(l)}</div>`;
@@ -10788,32 +10788,285 @@ var _ciKpSelections = [];
 
 function openCheckinWindow(){
   saveState();
-  // 현재 파일을 새 창으로 열고 체크인 모달 자동 실행
-  var w = window.open(window.location.href, 'checkin_window',
-    'width=460,height=740,resizable=yes,scrollbars=no,toolbar=no,menubar=no,location=no,status=no');
+
+  var TK_CAT_DATA   = JSON.stringify(TK_CAT);
+  var membersData   = JSON.stringify(members);
+  var tkGroupsData  = JSON.stringify(tkGroups);
+  var tkItemsData   = JSON.stringify(tkItems);
+  var lsLessonsData = JSON.stringify(lsLessons);
+  var lsProsData    = JSON.stringify(typeof lsPros!=='undefined'?lsPros:[]);
+  var ciData        = JSON.stringify({ciCheckins:ciCheckins,ciNextId:ciNextId});
+
+  var html = '<!DOCTYPE html><html lang="ko"><head>\n'
++'<meta charset="UTF-8"/>\n'
++'<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>\n'
++'<title>체크인</title>\n'
++'<link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"/>\n'
++'<style>\n'
++'*{box-sizing:border-box;margin:0;padding:0}\n'
++'body{font-family:\'Pretendard\',\'Apple SD Gothic Neo\',\'Malgun Gothic\',sans-serif;background:#1a2a44;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:16px}\n'
++'.ci-kp-box{background:#fff;border-radius:20px;width:100%;max-width:360px;box-shadow:0 16px 48px rgba(0,0,0,.4);overflow:hidden}\n'
++'.ci-kp-panel{display:none;flex-direction:column}.ci-kp-panel.active{display:flex}\n'
++'.ci-kp-head{padding:28px 24px 10px;text-align:center}\n'
++'.ci-kp-title{font-size:15px;font-weight:700;color:#aab4c4;letter-spacing:.3px;margin-bottom:18px}\n'
++'.ci-kp-display{min-height:44px;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:4px}\n'
++'.ci-kp-numtxt{font-size:28px;font-weight:800;color:#1a2a44;letter-spacing:3px;min-height:40px;display:flex;align-items:center}\n'
++'.ci-kp-hint{font-size:11px;color:#c0c8d4;text-align:center;min-height:16px;margin-bottom:16px}\n'
++'.ci-kp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:0 24px 20px}\n'
++'.ci-kp-btn{height:60px;border-radius:50%;border:none;background:#f1f4f8;font-size:22px;font-weight:700;color:#1a2a44;cursor:pointer;font-family:inherit;transition:background .1s,transform .08s;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.07)}\n'
++'.ci-kp-btn:hover{background:#e2e8f0}.ci-kp-btn:active{transform:scale(.93);background:#d4dce8}\n'
++'.ci-kp-btn.special{background:#f8f9fb;color:#6b7a8d}\n'
++'.ci-kp-btn.zero{grid-column:2}.ci-kp-btn.del{background:#f8f9fb}\n'
++'.ci-kp-btn.del svg{width:20px;height:20px}\n'
++'.ci-kp-enter{margin:0 24px 24px;height:52px;background:#2563eb;color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:800;cursor:pointer;font-family:inherit;letter-spacing:.5px;transition:background .1s}\n'
++'.ci-kp-enter:hover{background:#1d4ed8}.ci-kp-enter:active{background:#1e40af}\n'
++'.ci-kp-enter:disabled{background:#b0bec5;cursor:not-allowed}\n'
++'.ci-kp-member-head{padding:20px 20px 14px;border-bottom:1px solid #f0f0f0}\n'
++'.ci-kp-member-row{display:flex;align-items:center;gap:12px}\n'
++'.ci-kp-avatar{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#fff;flex-shrink:0}\n'
++'.ci-kp-mname{font-size:17px;font-weight:800;color:#111}\n'
++'.ci-kp-mmeta{font-size:11px;color:#999;margin-top:2px}\n'
++'.ci-kp-body{padding:14px 20px;max-height:340px;overflow-y:auto}\n'
++'.ci-kp-sec{font-size:10px;font-weight:700;color:#999;letter-spacing:.6px;margin-bottom:8px;margin-top:4px}\n'
++'.ci-kp-tk{display:flex;align-items:center;gap:10px;padding:11px 14px;border:2px solid #e8ecf0;border-radius:10px;cursor:pointer;transition:all .12s;margin-bottom:7px;background:#fff}\n'
++'.ci-kp-tk:hover{border-color:#90bce0;background:#f5f9ff}.ci-kp-tk.selected{border-color:#2563eb;background:#eff6ff}\n'
++'.ci-kp-tk-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;flex-shrink:0}\n'
++'.ci-kp-tk-name{font-size:13px;font-weight:700;color:#111;flex:1}\n'
++'.ci-kp-tk-exp{font-size:10px;color:#bbb;white-space:nowrap}\n'
++'.ci-kp-tk-check{width:18px;height:18px;border-radius:50%;border:2px solid #ddd;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .12s}\n'
++'.ci-kp-tk.selected .ci-kp-tk-check{background:#2563eb;border-color:#2563eb}\n'
++'.ci-kp-ls{display:flex;align-items:center;gap:8px;padding:9px 12px;border:1.5px solid #e8ecf0;border-radius:8px;cursor:pointer;transition:all .12s;margin-bottom:6px;background:#fff}\n'
++'.ci-kp-ls:hover{border-color:#90bce0;background:#f5f9ff}.ci-kp-ls.selected{border-color:#2563eb;background:#eff6ff}\n'
++'.ci-kp-also-fac{display:flex;align-items:center;gap:8px;padding:10px 14px;border:2px solid #e8ecf0;border-radius:10px;cursor:pointer;transition:all .12s;margin-bottom:7px;background:#fff}\n'
++'.ci-kp-also-fac:hover{border-color:#10b981;background:#f0fdf4}.ci-kp-also-fac.selected{border-color:#10b981;background:#ecfdf5}\n'
++'.ci-kp-also-fac .ci-kp-tk-check{border-color:#ddd}\n'
++'.ci-kp-also-fac.selected .ci-kp-tk-check{background:#10b981;border-color:#10b981}\n'
++'.ci-kp-divider{display:flex;align-items:center;gap:8px;margin:10px 0 8px}\n'
++'.ci-kp-divider::before,.ci-kp-divider::after{content:\'\';flex:1;height:1px;background:#f0f0f0}\n'
++'.ci-kp-divider span{font-size:10px;font-weight:700;color:#bbb;letter-spacing:.5px;white-space:nowrap}\n'
++'.ci-kp-foot{padding:12px 20px 18px;display:flex;gap:8px}\n'
++'.ci-kp-cancel{flex:1;height:46px;background:#fff;border:1.5px solid #ddd;color:#666;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}\n'
++'.ci-kp-cancel:hover{background:#f5f5f5}\n'
++'.ci-kp-confirm{flex:2;height:36px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;transition:background .1s}\n'
++'.ci-kp-confirm:hover{background:#1d4ed8}.ci-kp-confirm:disabled{background:#b0bec5;cursor:not-allowed}\n'
++'.ci-kp-err{font-size:12px;color:#ef4444;text-align:center;padding:6px 0;min-height:20px}\n'
++'.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#222;color:#fff;padding:10px 22px;border-radius:10px;font-size:13px;font-weight:700;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;z-index:9999;white-space:nowrap}\n'
++'.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}\n'
++'.toast.ok{background:#1a8a5e}.toast.warn{background:#b45309}\n'
++'</style></head><body>\n'
++'<div class="ci-kp-box">\n'
++'<div id="ci-kp-step1" class="ci-kp-panel active">\n'
++'  <div class="ci-kp-head">\n'
++'    <div class="ci-kp-title">회원번호 입력</div>\n'
++'    <div class="ci-kp-display"><div class="ci-kp-numtxt" id="ci-kp-numtxt"></div></div>\n'
++'    <div class="ci-kp-hint" id="ci-kp-hint"></div>\n'
++'  </div>\n'
++'  <div class="ci-kp-grid">\n'
++'    <button class="ci-kp-btn" onclick="kpPress(\'1\')">1</button><button class="ci-kp-btn" onclick="kpPress(\'2\')">2</button><button class="ci-kp-btn" onclick="kpPress(\'3\')">3</button>\n'
++'    <button class="ci-kp-btn" onclick="kpPress(\'4\')">4</button><button class="ci-kp-btn" onclick="kpPress(\'5\')">5</button><button class="ci-kp-btn" onclick="kpPress(\'6\')">6</button>\n'
++'    <button class="ci-kp-btn" onclick="kpPress(\'7\')">7</button><button class="ci-kp-btn" onclick="kpPress(\'8\')">8</button><button class="ci-kp-btn" onclick="kpPress(\'9\')">9</button>\n'
++'    <button class="ci-kp-btn special" onclick="kpReset()" title="초기화">↺</button>\n'
++'    <button class="ci-kp-btn zero" onclick="kpPress(\'0\')">0</button>\n'
++'    <button class="ci-kp-btn del" onclick="kpDel()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><line x1="18" y1="9" x2="13" y2="14"/><line x1="13" y1="9" x2="18" y2="14"/></svg></button>\n'
++'  </div>\n'
++'  <div class="ci-kp-err" id="ci-kp-err"></div>\n'
++'  <button class="ci-kp-enter" id="ci-kp-enter-btn" onclick="kpEnter()" disabled>입장</button>\n'
++'</div>\n'
++'<div id="ci-kp-step2" class="ci-kp-panel">\n'
++'  <div class="ci-kp-member-head">\n'
++'    <div class="ci-kp-member-row">\n'
++'      <div class="ci-kp-avatar" id="ci-kp-avatar"></div>\n'
++'      <div><div class="ci-kp-mname" id="ci-kp-mname"></div><div class="ci-kp-mmeta" id="ci-kp-mmeta"></div></div>\n'
++'      <button onclick="kpBack()" style="margin-left:auto;border:none;background:#f1f4f8;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:700;color:#666;cursor:pointer;font-family:inherit">← 다시입력</button>\n'
++'    </div>\n'
++'  </div>\n'
++'  <div class="ci-kp-body">\n'
++'    <div class="ci-kp-sec">이용권 선택</div>\n'
++'    <div id="ci-kp-tk-list"></div>\n'
++'    <div id="ci-kp-ls-wrap" style="display:none">\n'
++'      <div class="ci-kp-divider"><span>레슨 스케줄 연결</span></div>\n'
++'      <div id="ci-kp-ls-list"></div>\n'
++'      <div id="ci-kp-also-fac-wrap" style="display:none">\n'
++'        <div class="ci-kp-divider"><span>시설 동시 체크인</span></div>\n'
++'        <div id="ci-kp-also-fac-list"></div>\n'
++'      </div>\n'
++'    </div>\n'
++'  </div>\n'
++'  <div class="ci-kp-foot">\n'
++'    <button class="ci-kp-cancel" onclick="window.close()">취소</button>\n'
++'    <button class="ci-kp-confirm" id="ci-kp-confirm-btn" onclick="kpConfirm()" disabled>✅ 체크인</button>\n'
++'  </div>\n'
++'</div>\n'
++'</div>\n'
++'<div id="toast" class="toast"></div>\n'
++'<script>\n'
++'var TK_CAT='+TK_CAT_DATA+';\n'
++'var members='+membersData+';\n'
++'var tkGroups='+tkGroupsData+';\n'
++'var tkItems='+tkItemsData+';\n'
++'var lsLessons='+lsLessonsData+';\n'
++'var lsPros='+lsProsData+';\n'
++'var _ci='+ciData+';\n'
++'var ciCheckins=_ci.ciCheckins||[];\n'
++'var ciNextId=_ci.ciNextId||1;\n'
++'var _kpNum="";\n'
++'var _kpMemberId=null;\n'
++'var _kpSelections=[];\n'
++'var _lsLessonId=(function(){var mx=0;lsLessons.forEach(function(l){if(l.id>=mx)mx=l.id+1;});return mx;})();\n'
++'var _toastT=null;\n'
++'function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}\n'
++'function tkCatMeta(v){for(var i=0;i<TK_CAT.length;i++)if(TK_CAT[i].v===v)return TK_CAT[i];return{v:v,lbl:v,group:"",badge:v,badgeCls:"#eee:#666"};}\n'
++'function mbGetProName(pid){if(!pid)return"—";var p=lsPros.find(function(x){return String(x.id)===String(pid)||x.name===pid;});return p?p.name:pid;}\n'
++'function todayStr(){var d=new Date();return d.getFullYear()+"-"+(d.getMonth()+1+"").padStart(2,"0")+"-"+(d.getDate()+"").padStart(2,"0");}\n'
++'function nowTimeStr(){var n=new Date();var m=n.getMinutes();var r=Math.round(m/10)*10;var h=n.getHours()+(r===60?1:0);r=r===60?0:r;return(h+"").padStart(2,"0")+":"+(r+"").padStart(2,"0");}\n'
++'function showToast(msg,type){var t=document.getElementById("toast");t.textContent=msg;t.className="toast "+type+" show";if(_toastT)clearTimeout(_toastT);_toastT=setTimeout(function(){t.classList.remove("show");},2800);}\n'
++'function kpShowStep(n){document.getElementById("ci-kp-step1").classList.toggle("active",n===1);document.getElementById("ci-kp-step2").classList.toggle("active",n===2);}\n'
++'function kpPress(d){if(_kpNum.length>=8)return;_kpNum+=d;kpUpdateDisplay();kpTryMatch();}\n'
++'function kpDel(){if(!_kpNum.length)return;_kpNum=_kpNum.slice(0,-1);kpUpdateDisplay();document.getElementById("ci-kp-err").textContent="";document.getElementById("ci-kp-hint").textContent="";document.getElementById("ci-kp-enter-btn").disabled=_kpNum.length===0;kpTryMatch();}\n'
++'function kpReset(){_kpNum="";kpUpdateDisplay();document.getElementById("ci-kp-err").textContent="";document.getElementById("ci-kp-hint").textContent="";document.getElementById("ci-kp-enter-btn").disabled=true;}\n'
++'function kpUpdateDisplay(){var el=document.getElementById("ci-kp-numtxt");if(el)el.textContent=_kpNum||"";document.getElementById("ci-kp-enter-btn").disabled=_kpNum.length===0;}\n'
++'function kpTryMatch(){var m=members.filter(function(x){return(x.num||"")===_kpNum;});var h=document.getElementById("ci-kp-hint");if(m.length===1){h.textContent=m[0].name+" 님 확인됨";}else{h.textContent="";}}\n'
++'function kpBack(){_kpMemberId=null;_kpSelections=[];kpShowStep(1);document.getElementById("ci-kp-err").textContent="";}\n'
++'function kpEnter(){if(!_kpNum)return;var m=members.filter(function(x){return(x.num||"")===_kpNum;});var e=document.getElementById("ci-kp-err");if(!m.length){e.textContent="일치하는 회원번호가 없습니다.";return;}if(m.length>1){e.textContent="동일 회원번호가 여러 명 있습니다.";return;}_kpMemberId=m[0].id;e.textContent="";kpShowMemberStep(m[0]);}\n'
++'function kpShowMemberStep(m){\n'
++'  var colors=["#1a5fa0","#0d9488","#7c3aed","#be185d","#b45309","#0369a1"];\n'
++'  var col=colors[(m.name.charCodeAt(0)||0)%colors.length];\n'
++'  var av=document.getElementById("ci-kp-avatar");av.textContent=m.name.charAt(0);av.style.background=col;\n'
++'  document.getElementById("ci-kp-mname").textContent=m.name;\n'
++'  document.getElementById("ci-kp-mmeta").textContent=(m.branch||"지점")+(m.phone?" · "+m.phone:"");\n'
++'  var today=todayStr();\n'
++'  var allTks=(m.tickets||[]).map(function(tk,i){return{tk:tk,idx:i};}).filter(function(o){return !o.tk.refunded&&(!o.tk.endDate||o.tk.endDate>=today);});\n'
++'  var tkList=document.getElementById("ci-kp-tk-list");\n'
++'  if(!allTks.length){\n'
++'    tkList.innerHTML=\'<div style="font-size:12px;color:#f59e0b;padding:10px 0;text-align:center">유효한 이용권이 없습니다</div>\';\n'
++'    _kpSelections=[];\n'
++'  }else{\n'
++'    tkList.innerHTML=allTks.map(function(o){\n'
++'      var g=tkGroups.find(function(x){return +x.id===+o.tk.groupId;});\n'
++'      var it=tkItems.find(function(x){return +x.id===+o.tk.itemId;});\n'
++'      var gName=g?g.name:"이용권";\n'
++'      var meta=tkCatMeta(g?g.cat:"");\n'
++'      var bc=(meta.badgeCls||"#eee:#666").split(":");\n'
++'      var isLesson=(meta.group==="레슨");\n'
++'      var isFacCount=g&&g.cat==="연습장-횟수";\n'
++'      var remainHtml="";\n'
++'      if((isLesson||isFacCount)&&it&&it.count){\n'
++'        var usedC=lsLessons.filter(function(l){if(l.memberId!==m.id)return false;if(o.tk.id&&l.ticketId===o.tk.id)return true;if(l.ticketIdx===o.idx)return true;return false;}).filter(function(l){return l.status==="attend"||l.status==="absent";}).length;\n'
++'        var remC=Math.max(0,it.count-usedC);\n'
++'        var remColor=remC===0?"#dc2626":remC<=3?"#d97706":"#16a34a";\n'
++'        var remBg=remC===0?"#fee2e2":remC<=3?"#fef3c7":"#f0fdf4";\n'
++'        remainHtml=\'<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;background:\'+remBg+\';color:\'+remColor+\'">잔여 \'+remC+\'/\'+it.count+\'회</span>\';\n'
++'      }\n'
++'      var expHtml="";\n'
++'      if(o.tk.endDate){var dL=Math.round((new Date(o.tk.endDate)-new Date(today))/(1000*60*60*24));var ec=dL<=7?"#dc2626":dL<=30?"#d97706":"#6b7280";expHtml=\'<span style="font-size:9px;color:\'+ec+\';white-space:nowrap">\'+（dL<0?"만료":dL===0?"오늘만료":dL+"일후만료")+\'</span>\';}\n'
++'      var proHtml=(isLesson&&o.tk.pro)?\'<span style="font-size:10px;color:#6b7280">👤 \'+esc(mbGetProName(o.tk.pro))+\'</span>\':"";\n'
++'      return \'<div class="ci-kp-tk" id="ci-kp-tk-\'+o.idx+\'" onclick="kpToggleTk(\'+m.id+\',\'+o.idx+\',\'+isLesson+\')">\'+\n'
++'        \'<div style="display:flex;align-items:center;gap:6px;flex:1;min-width:0">\'+\n'
++'          \'<span class="ci-kp-tk-badge" style="background:\'+bc[0]+\';color:\'+bc[1]+\'">\'+meta.badge+\'</span>\'+\n'
++'          \'<div style="display:flex;flex-direction:column;gap:1px"><span class="ci-kp-tk-name">\'+esc(gName)+\'</span>\'+proHtml+\'</div>\'+\n'
++'        \'</div>\'+\n'
++'        \'<div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0">\'+（remainHtml||"")+\'<span class="ci-kp-tk-exp">\'+（o.tk.endDate?"~"+o.tk.endDate:"기간 무제한")+\'</span>\'+expHtml+\'</div>\'+\n'
++'        \'<div class="ci-kp-tk-check" style="margin-left:6px"><svg width="10" height="10" viewBox="0 0 10 10"><polyline points="1.5,5 4,7.5 8.5,2.5" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>\'+\n'
++'      \'</div>\';\n'
++'    }).join("");\n'
++'    _kpSelections=[];\n'
++'    setTimeout(function(){kpRenderSelections(m);},0);\n'
++'  }\n'
++'  kpShowStep(2);kpUpdateConfirmBtn();\n'
++'}\n'
++'function kpToggleTk(memberId,idx,isLesson){var m=members.find(function(x){return x.id===memberId;});var ex=_kpSelections.findIndex(function(s){return s.ticketIdx===idx;});if(ex>=0){if(_kpSelections.length<=1)return;_kpSelections.splice(ex,1);}else{_kpSelections.push({ticketIdx:idx,type:isLesson?"lesson":"facility",lessonId:null});}if(m)kpRenderSelections(m);kpUpdateConfirmBtn();}\n'
++'function kpRenderSelections(m){\n'
++'  document.querySelectorAll(".ci-kp-tk").forEach(function(el){var i=+el.id.replace("ci-kp-tk-","");el.classList.toggle("selected",_kpSelections.some(function(s){return s.ticketIdx===i;}));});\n'
++'  var lessonSels=_kpSelections.filter(function(s){return s.type==="lesson";});\n'
++'  var facSels=_kpSelections.filter(function(s){return s.type==="facility";});\n'
++'  var lw=document.getElementById("ci-kp-ls-wrap");\n'
++'  if(!lessonSels.length){lw.style.display="none";return;}\n'
++'  var dateStr=todayStr();\n'
++'  var todayLess=lsLessons.filter(function(l){return +l.memberId===+m.id&&l.date===dateStr&&l.start&&l.end&&l.start!==l.end;});\n'
++'  var ll=document.getElementById("ci-kp-ls-list");\n'
++'  if(!todayLess.length){lw.style.display="none";}else{\n'
++'    lw.style.display="";\n'
++'    ll.innerHTML=todayLess.map(function(l){var isSel=!!_kpSelections.find(function(s){return s.lessonId===l.id;});var att=l.status==="attend";return\'<div class="ci-kp-ls\'+（isSel?" selected":"")+\'" id="ci-kp-ls-\'+l.id+\'" onclick="kpToggleLesson(\'+l.id+\')"><span style="font-size:14px">\'+（att?"✅":"📅")+\'</span><span style="font-size:12px;font-weight:700;color:#111;flex:1">\'+l.start+"~"+l.end+\'</span><span style="font-size:11px;color:#888">\'+esc(l.instructor)+\'</span>\'+（att?\'<span style="font-size:9px;background:#dcfce7;color:#166534;padding:1px 5px;border-radius:4px;font-weight:700">출석</span>\':"")+\'<div class="ci-kp-tk-check"><svg width="10" height="10" viewBox="0 0 10 10"><polyline points="1.5,5 4,7.5 8.5,2.5" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>\';}).join("");\n'
++'  }\n'
++'  var afw=document.getElementById("ci-kp-also-fac-wrap");var afl=document.getElementById("ci-kp-also-fac-list");\n'
++'  var today2=todayStr();\n'
++'  var allTks2=(m.tickets||[]).map(function(tk,i){return{tk:tk,idx:i};}).filter(function(o){return !o.tk.refunded&&(!o.tk.endDate||o.tk.endDate>=today2);});\n'
++'  var facTks=allTks2.filter(function(o){var g=tkGroups.find(function(x){return +x.id===+o.tk.groupId;});var meta=tkCatMeta(g?g.cat:"");return meta.group!=="레슨";});\n'
++'  if(facTks.length&&!facSels.length||facSels.length){\n'
++'    afw.style.display="";\n'
++'    afl.innerHTML=facTks.map(function(o){var g=tkGroups.find(function(x){return +x.id===+o.tk.groupId;});var gName=g?g.name:"시설이용권";var meta=tkCatMeta(g?g.cat:"");var bc=(meta.badgeCls||"#eee:#666").split(":");var isSel=_kpSelections.some(function(s){return s.ticketIdx===o.idx;});return\'<div class="ci-kp-also-fac\'+（isSel?" selected":"")+\'" id="ci-kp-also-fac-\'+o.idx+\'" onclick="kpToggleAlsoFac(\'+m.id+\',\'+o.idx+\')"><span style="font-size:18px">🏌️</span><span class="ci-kp-tk-badge" style="background:\'+bc[0]+\';color:\'+bc[1]+\'">\'+meta.badge+\'</span><span class="ci-kp-tk-name">\'+esc(gName)+\'</span><span style="font-size:10px;color:#10b981;font-weight:700">\'+（isSel?"함께 체크인":"터치하여 추가")+\'</span><div class="ci-kp-tk-check"><svg width="10" height="10" viewBox="0 0 10 10"><polyline points="1.5,5 4,7.5 8.5,2.5" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>\';}).join("");\n'
++'  }else{afw.style.display="none";}\n'
++'}\n'
++'function kpToggleAlsoFac(memberId,idx){var m=members.find(function(x){return x.id===memberId;});var ex=_kpSelections.findIndex(function(s){return s.ticketIdx===idx;});if(ex>=0){_kpSelections.splice(ex,1);}else{_kpSelections.push({ticketIdx:idx,type:"facility",lessonId:null});}if(m)kpRenderSelections(m);kpUpdateConfirmBtn();}\n'
++'function kpToggleLesson(lid){var li=_kpSelections.findIndex(function(s){return s.lessonId===lid;});if(li>=0){_kpSelections[li].lessonId=null;}else{var fi=_kpSelections.findIndex(function(s){return s.type==="lesson"&&!s.lessonId;});if(fi>=0)_kpSelections[fi].lessonId=lid;}var m=members.find(function(x){return x.id===_kpMemberId;});if(m)kpRenderSelections(m);}\n'
++'function kpUpdateConfirmBtn(){var btn=document.getElementById("ci-kp-confirm-btn");if(!btn)return;var cnt=_kpSelections.length;btn.textContent=cnt>1?"✅ 체크인 ("+cnt+"건)":"✅ 체크인";btn.disabled=cnt===0;}\n'
++'function kpConfirm(){\n'
++'  if(!_kpMemberId){showToast("회원을 확인해주세요","warn");return;}\n'
++'  if(!_kpSelections.length){showToast("이용권을 선택해주세요","warn");return;}\n'
++'  var m=members.find(function(x){return x.id===_kpMemberId;});\n'
++'  if(!m){showToast("회원을 찾을 수 없습니다","warn");return;}\n'
++'  var now=new Date();var timeStr=nowTimeStr();var dateStr=todayStr();var stateChanged=false;\n'
++'  for(var vi=0;vi<_kpSelections.length;vi++){\n'
++'    var sel=_kpSelections[vi];var tk=m.tickets&&m.tickets[sel.ticketIdx];\n'
++'    var g=tk?tkGroups.find(function(x){return +x.id===+tk.groupId;}):null;\n'
++'    var meta=g?tkCatMeta(g.cat):null;\n'
++'    var isLesson=meta?meta.group==="레슨":(sel.type==="lesson");\n'
++'    if(isLesson&&!sel.lessonId){\n'
++'      ciCheckins.push({id:ciNextId++,date:dateStr,time:timeStr,memberId:_kpMemberId,memberName:m.name,type:"lesson",ticketIdx:sel.ticketIdx,lessonId:null,memo:"",status:"rejected",checkedAt:now.getTime()});\n'
++'      localStorage.setItem("tdf_checkins",JSON.stringify({ciCheckins:ciCheckins,ciNextId:ciNextId}));\n'
++'      showToast(m.name+" 님 — 예약된 레슨 없음. 거절 처리됨","warn");\n'
++'      setTimeout(function(){window.close();},2000);return;\n'
++'    }\n'
++'    if(meta&&meta.group==="연습장"&&g.cat==="연습장-횟수"){\n'
++'      var it=tkItems.find(function(x){return +x.id===+tk.itemId;});\n'
++'      if(it&&it.count){var used=lsLessons.filter(function(l){if(l.memberId!==m.id)return false;if(tk.id&&l.ticketId===tk.id)return true;if(l.ticketIdx===sel.ticketIdx)return true;return false;}).filter(function(l){return l.status==="attend"||l.status==="absent";}).length;var remain=Math.max(0,it.count-used);if(remain<=0){showToast("["+(g?g.name:"이용권")+"] 잔여 횟수가 없습니다.","warn");return;}}\n'
++'    }\n'
++'  }\n'
++'  _kpSelections.forEach(function(sel){\n'
++'    var tk=m.tickets&&m.tickets[sel.ticketIdx];\n'
++'    var g=tk?tkGroups.find(function(x){return +x.id===+tk.groupId;}):null;\n'
++'    var meta=g?tkCatMeta(g.cat):null;\n'
++'    var isLesson=meta?meta.group==="레슨":(sel.type==="lesson");\n'
++'    var isFacCount=meta&&g.cat==="연습장-횟수";\n'
++'    if(isLesson&&sel.lessonId){var ls=lsLessons.find(function(x){return x.id===sel.lessonId;});if(ls&&ls.status!=="attend"){ls.status="attend";stateChanged=true;}}\n'
++'    else if(isFacCount){lsLessons.push({id:_lsLessonId++,instructor:tk.pro||"",student:m.name,date:dateStr,start:timeStr,end:timeStr,duration:0,bay:"",memo:"시설이용 (자동)",memberId:m.id,ticketIdx:sel.ticketIdx,ticketId:tk.id||null,status:"attend"});stateChanged=true;}\n'
++'    ciCheckins.push({id:ciNextId++,date:dateStr,time:timeStr,memberId:_kpMemberId,memberName:m.name,type:sel.type,ticketIdx:sel.ticketIdx,lessonId:isLesson?sel.lessonId:null,memo:"",checkedAt:now.getTime()});\n'
++'  });\n'
++'  localStorage.setItem("tdf_checkins",JSON.stringify({ciCheckins:ciCheckins,ciNextId:ciNextId}));\n'
++'  if(stateChanged){\n'
++'    try{var ls2=JSON.parse(localStorage.getItem("tdf_lessons")||"{}");ls2.lsLessons=lsLessons;localStorage.setItem("tdf_lessons",JSON.stringify(ls2));}catch(e){}\n'
++'  }\n'
++'  var cnt=_kpSelections.length;\n'
++'  showToast(m.name+" 님 체크인 완료"+(cnt>1?" ("+cnt+"건)":""),"ok");\n'
++'  setTimeout(function(){window.close();},1800);\n'
++'}\n'
++'document.addEventListener("keydown",function(e){var step1=document.getElementById("ci-kp-step1");if(!step1.classList.contains("active"))return;if(e.key>="0"&&e.key<="9"){e.preventDefault();kpPress(e.key);}else if(e.key==="Backspace"){e.preventDefault();kpDel();}else if(e.key==="Enter"){e.preventDefault();kpEnter();}else if(e.key==="Escape"){e.preventDefault();window.close();}});\n'
++'<\/script></body></html>';
+
+  // 전각 괄호 제거
+  html = html.replace(/（/g,'(').replace(/）/g,')');
+
+  var blob = new Blob([html], {type:'text/html;charset=utf-8'});
+  var url  = URL.createObjectURL(blob);
+  var w = window.open(url, 'checkin_window',
+    'width=420,height=700,resizable=yes,scrollbars=no,toolbar=no,menubar=no,location=no,status=no');
   if(!w){ ciOpenModal(); return; }
-  // 새 창 로드 완료 후 체크인 모달 열기 + 체크인 완료 콜백 등록
-  var timer = setInterval(function(){
-    try{
-      if(w.closed){ clearInterval(timer); return; }
-      if(w.document.readyState==='complete' && typeof w.ciOpenModal==='function'){
-        clearInterval(timer);
-        w.showPage('checkin-page');
-        setTimeout(function(){ w.ciOpenModal(); }, 400);
-        // 새 창에서 체크인 저장 시 메인 창 갱신
-        var origSave = w.saveState;
-        w.saveState = function(){
-          origSave.call(w);
-          try{
-            var d=JSON.parse(localStorage.getItem('tdf_checkins')||'{}');
-            if(d.ciCheckins){ ciCheckins=d.ciCheckins; ciNextId=d.ciNextId||1; }
-            ciRender();
-            if(typeof homeRender==='function') homeRender();
-          }catch(e){}
-        };
-      }
-    }catch(e){ clearInterval(timer); }
-  }, 200);
+
+  var pollClose = setInterval(function(){
+    if(!w || w.closed){
+      clearInterval(pollClose);
+      URL.revokeObjectURL(url);
+      try{
+        var d=JSON.parse(localStorage.getItem('tdf_checkins')||'{}');
+        if(d.ciCheckins){ ciCheckins=d.ciCheckins; ciNextId=d.ciNextId||1; }
+        var dl=JSON.parse(localStorage.getItem('tdf_lessons')||'{}');
+        if(dl.lsLessons){ lsLessons=dl.lsLessons; }
+        ciRender();
+        if(typeof homeRender==='function') homeRender();
+        if(typeof lsRender==='function') try{lsRender();}catch(e){}
+      }catch(e){}
+    }
+  }, 500);
 }
 
 function ciOpenModal(){
