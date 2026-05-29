@@ -1749,8 +1749,8 @@ body{margin-left:0;margin-top:var(--total-h);transition:none}
         <input id="mb-search" type="text" placeholder="이름·연락처·회원번호 검색…"
           style="flex:1;min-width:0;font-size:13px;padding:8px 12px;border:1px solid #ddd;border-radius:7px;font-family:inherit;outline:none"
           onfocus="this.style.borderColor='#90bce0'" onblur="this.style.borderColor='#ddd'"
-          onkeydown="if(event.key==='Enter')mbRender()"/>
-        <button onclick="mbRender()" style="background:#1a5fa0;color:#fff;border:none;border-radius:7px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0">검색</button>
+          onkeydown="if(event.key==='Enter')mbSearchOnly()"/>
+        <button onclick="mbSearchOnly()" style="background:#1a5fa0;color:#fff;border:none;border-radius:7px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0">검색</button>
       </div>
       <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
         <button onclick="mbResetFilter()" style="background:#fff;color:#666;border:1px solid #ddd;border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">초기화</button>
@@ -1828,6 +1828,11 @@ body{margin-left:0;margin-top:var(--total-h);transition:none}
         <input type="text" id="mb-filter-date-from" style="font-size:12px;padding:6px 10px;border:1px solid #ddd;border-radius:6px;font-family:inherit;outline:none"/ placeholder="2026-05-19" data-dp="1" onclick="dpOpen(this)">
         <span style="color:#bbb">~</span>
         <input type="text" id="mb-filter-date-to" style="font-size:12px;padding:6px 10px;border:1px solid #ddd;border-radius:6px;font-family:inherit;outline:none"/ placeholder="2026-05-19" data-dp="1" onclick="dpOpen(this)">
+      </div>
+      <!-- 상세검색 실행 버튼 -->
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid #ececec">
+        <button onclick="mbResetFilter()" style="background:#fff;color:#666;border:1px solid #ddd;border-radius:7px;padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">초기화</button>
+        <button onclick="const s=document.getElementById('mb-search');if(s)s.value='';mbRender()" style="background:#1a5fa0;color:#fff;border:none;border-radius:7px;padding:8px 24px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">설정한 조건으로 회원검색</button>
       </div>
     </div>
     </div>
@@ -5119,12 +5124,13 @@ function topbarMbSearchGo(){
   const inp2=document.getElementById('topbar-mb-search');
   const val=(inp1&&inp1.value.trim())||(inp2&&inp2.value.trim())||'';
   const si=document.getElementById('mb-search');
-  if(si){ si.value=val; mbRender(); }
+  if(si) si.value=val;
   showPage('member-page');
   if(inp1) inp1.value='';
   if(inp2) inp2.value='';
   if(inp1) inp1.blur();
   if(inp2) inp2.blur();
+  mbSearchOnly();
 }
 function topbarSearchFocus(){
   // 포커스만으로는 페이지 이동 안 함
@@ -7181,6 +7187,18 @@ function mbDetailOpen(id){
   document.querySelectorAll('.page').forEach(p=>{p.style.display='none';p.classList.remove('active');});
   const pg = document.getElementById('member-detail-page');
   pg.style.display='block'; pg.classList.add('active');
+  // 탑바 / 슈퍼탑바 active 동기화 (회원 탭으로)
+  document.querySelectorAll('.topbar-item').forEach(a=>a.classList.remove('active'));
+  document.getElementById('tb-member')?.classList.add('active');
+  document.querySelectorAll('.stb-item').forEach(a=>a.classList.remove('active'));
+  document.getElementById('stb-member')?.classList.add('active');
+  // 서브탭바: member-subtab-bar만 표시
+  ['bay','lesson','member','ticket','accounting','settings'].forEach(function(k){
+    var el=document.getElementById(k+'-subtab-bar');
+    if(el) el.style.display='none';
+  });
+  var mstb=document.getElementById('member-subtab-bar');
+  if(mstb){ mstb.style.display='flex'; alignSubtab('member-page'); }
   // 새로고침 복원용 저장
   try{ localStorage.setItem('tdf_currentPage','member-detail-page'); }catch(e){}
   try{ localStorage.setItem('tdf_memberDetailId', String(id)); }catch(e){}
@@ -7305,6 +7323,22 @@ function mbToggleDetail(){
   const open=panel.style.display==='none';
   panel.style.display=open?'block':'none';
   if(arrow) arrow.textContent=open?'▲':'▼';
+}
+function mbSearchOnly(){
+  // 상세조건 모두 초기화 (검색어는 유지)
+  const grs=document.querySelectorAll('input[name="mb-gender-r"]');
+  grs.forEach(r=>{r.checked=r.value===''});
+  const so=document.getElementById('mb-sort'); if(so) so.value='newest';
+  const br=document.getElementById('mb-filter-branch'); if(br) br.value='';
+  const df=document.getElementById('mb-filter-date-from'); if(df) df.value='';
+  const dt=document.getElementById('mb-filter-date-to'); if(dt) dt.value='';
+  const ft=document.getElementById('mb-filter-ticket'); if(ft) ft.value='';
+  const fp=document.getElementById('mb-filter-pro'); if(fp) fp.value='';
+  const fr=document.getElementById('mb-filter-remain'); if(fr) fr.value='';
+  const fe=document.getElementById('mb-filter-expire'); if(fe) fe.value='';
+  const stBtns=document.querySelectorAll('input[name="mb-status-r"]');
+  stBtns.forEach(r=>{r.checked=r.value===''});  // 전체 회원 기준
+  mbRender();
 }
 function mbResetFilter(){
   const s=document.getElementById('mb-search'); if(s) s.value='';
